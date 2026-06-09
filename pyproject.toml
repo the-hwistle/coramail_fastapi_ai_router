@@ -1,0 +1,28 @@
+[project]
+name = "coramail-fastapi-ai-router"
+version = "0.1.0"
+description = "FastAPI backend and Streamlit frontends for CoRA Mail AI routing."
+requires-python = ">=3.10,<3.13"
+dependencies = [
+    "fastapi",
+    "streamlit",
+    "uvicorn",
+    "pydantic",
+    "qdrant-client",
+    "llama-index",
+    "llama-index-embeddings-ollama",
+    "llama-index-llms-ollama",
+    "llama-index-multi-modal-llms-ollama",
+    "google-api-python-client",
+    "google-auth-oauthlib",
+    "pymupdf",
+    "tqdm",
+    "requests",
+]
+
+[tool.uv]
+package = false
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"

@@ -13,13 +13,12 @@ from threading import Lock, RLock
 from typing import Annotated, Any
 
 from fastapi import FastAPI, HTTPException, Query, Request
-from fastapi.responses import FileResponse, JSONResponse
-from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 
 APP_DIR = Path(__file__).resolve().parent
-STATIC_DIR = APP_DIR / "static"
 RUN_DIR = APP_DIR / "runs"
 PIPELINE_DIR = Path(os.getenv("CORAMAIL_PIPELINE_DIR", str(APP_DIR / "pipeline"))).resolve()
 
@@ -46,7 +45,18 @@ app = FastAPI(
     description="FastAPI app for Gmail ingestion, Qdrant RAG search, and LLM email routing.",
     version="1.0.0",
 )
-app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://127.0.0.1:8501",
+        "http://127.0.0.1:8502",
+        "http://localhost:8501",
+        "http://localhost:8502",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 _model_lock = Lock()
 _qdrant_lock = RLock()
@@ -126,8 +136,11 @@ async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONR
 
 
 @app.get("/")
-def index() -> FileResponse:
-    return FileResponse(STATIC_DIR / "index.html")
+def root() -> dict[str, str]:
+    return {
+        "service": "CoRA Mail AI Router API",
+        "frontend": "Run streamlit_app.py on port 8501",
+    }
 
 
 def load_emails() -> list[dict[str, Any]]:

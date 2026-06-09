@@ -1,0 +1,20 @@
+.git/
+.venv/
+__pycache__/
+*.py[cod]
+*.log
+runs/
+
+# Runtime data and credentials are mounted by docker-compose.
+pipeline/credentials.json
+pipeline/token.json
+pipeline/emails.db
+pipeline/emails.json
+pipeline/classification_report.json
+pipeline/qdrant_storage/
+pipeline/attachments/
+pipeline/data/
+
+.DS_Store
+.idea/
+.vscode/
