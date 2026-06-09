@@ -1,0 +1,31 @@
+.venv/
+__pycache__/
+*.py[cod]
+
+# Runtime logs and job outputs
+runs/
+*.log
+
+# Local credentials and Gmail auth tokens
+credentials.json
+token.json
+pipeline/credentials.json
+pipeline/token.json
+
+# Local mail/vector data snapshots
+*.db
+*.sqlite
+*.sqlite3
+emails.json
+classification_report.json
+pipeline/emails.db
+pipeline/emails.json
+pipeline/classification_report.json
+pipeline/qdrant_storage/
+pipeline/attachments/
+pipeline/data/
+
+# OS/editor noise
+.DS_Store
+.idea/
+.vscode/

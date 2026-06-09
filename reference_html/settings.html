@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ForgeMail AI - Workflow Settings</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-fixed-dim": "#b7c7e4",
+                    "on-tertiary-container": "#a98d63",
+                    "inverse-primary": "#b7c7e4",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary-fixed-dim": "#adc6ff",
+                    "on-surface": "#1b1b1d",
+                    "on-primary-fixed-variant": "#38485f",
+                    "surface-container-highest": "#e4e2e4",
+                    "background": "#fbf9fb",
+                    "on-secondary-fixed": "#001a42",
+                    "inverse-surface": "#303032",
+                    "tertiary-fixed-dim": "#e1c294",
+                    "secondary": "#0058be",
+                    "inverse-on-surface": "#f2f0f2",
+                    "on-secondary-container": "#fefcff",
+                    "on-surface-variant": "#44474d",
+                    "tertiary-container": "#392706",
+                    "secondary-container": "#2170e4",
+                    "surface-container": "#efedef",
+                    "on-secondary-fixed-variant": "#004395",
+                    "surface-tint": "#505f78",
+                    "surface-container-low": "#f5f3f5",
+                    "primary-container": "#1b2b41",
+                    "on-primary-container": "#8292ad",
+                    "outline-variant": "#c4c6cd",
+                    "primary-fixed": "#d4e3ff",
+                    "surface-bright": "#fbf9fb",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary": "#ffffff",
+                    "surface-variant": "#e4e2e4",
+                    "on-tertiary-fixed": "#281900",
+                    "error-container": "#ffdad6",
+                    "tertiary-fixed": "#fedeae",
+                    "on-error": "#ffffff",
+                    "on-primary-fixed": "#0b1c31",
+                    "on-primary": "#ffffff",
+                    "surface": "#fbf9fb",
+                    "on-error-container": "#93000a",
+                    "secondary-fixed": "#d8e2ff",
+                    "on-tertiary-fixed-variant": "#584320",
+                    "tertiary": "#201300",
+                    "surface-container-high": "#eae7ea",
+                    "primary": "#05162b",
+                    "surface-dim": "#dbd9db",
+                    "on-background": "#1b1b1d",
+                    "outline": "#75777d",
+                    "error": "#ba1a1a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "sidebar-width": "280px",
+                    "unit": "4px",
+                    "md": "16px",
+                    "preview-pane-min": "400px",
+                    "container-margin": "24px",
+                    "gutter": "16px",
+                    "xs": "4px",
+                    "xl": "32px",
+                    "lg": "24px",
+                    "sm": "8px"
+            },
+            "fontFamily": {
+                    "headline-md": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "mono-data": ["Inter"],
+                    "title-lg": ["Inter"],
+                    "body-md": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "headline-sm": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "label-md": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                    "label-sm": ["11px", { "lineHeight": "14px", "fontWeight": "500" }],
+                    "display-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                    "mono-data": ["13px", { "lineHeight": "20px", "fontWeight": "400" }],
+                    "title-lg": ["18px", { "lineHeight": "24px", "fontWeight": "600" }],
+                    "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                    "body-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
+                    "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                    "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                    "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #fbf9fb; color: #1b1b1d; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .rule-drag-handle:hover { cursor: grab; }
+        .rule-drag-handle:active { cursor: grabbing; }
+        .glass-panel { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(8px); border: 1px solid #e2e8f0; }
+        .industrial-shadow { box-shadow: 0px 4px 12px rgba(27, 43, 65, 0.08); }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen">
+<!-- Global Navigation Shell -->
+<nav class="flex flex-col h-screen fixed left-0 top-0 w-[280px] z-50 bg-primary dark:bg-on-primary-fixed">
+<div class="px-lg py-xl flex flex-col gap-xs">
+<span class="text-title-lg font-title-lg font-black text-surface-bright dark:text-surface-container-lowest">ForgeMail AI</span>
+<span class="font-label-md text-label-md text-on-primary-container opacity-70">Supply Chain Intelligence</span>
+</div>
+<div class="flex-1 flex flex-col mt-md">
+<a class="flex items-center gap-md py-md transition-colors hover:bg-primary-container hover:text-primary-fixed text-on-primary-container dark:text-on-primary-fixed-variant pl-5" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-md py-md transition-colors hover:bg-primary-container hover:text-primary-fixed text-on-primary-container dark:text-on-primary-fixed-variant pl-5" href="#">
+<span class="material-symbols-outlined">inbox</span>
+<span class="font-label-md text-label-md">Inbox</span>
+</a>
+<a class="flex items-center gap-md py-md transition-colors hover:bg-primary-container hover:text-primary-fixed text-on-primary-container dark:text-on-primary-fixed-variant pl-5" href="#">
+<span class="material-symbols-outlined">search</span>
+<span class="font-label-md text-label-md">Search</span>
+</a>
+<a class="flex items-center gap-md py-md transition-colors hover:bg-primary-container hover:text-primary-fixed text-on-primary-container dark:text-on-primary-fixed-variant pl-5" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-label-md text-label-md">Analytics</span>
+</a>
+<!-- Active Navigation -->
+<a class="flex items-center gap-md py-md text-secondary-fixed font-bold border-l-4 border-secondary-fixed pl-4 opacity-90 transition-opacity duration-150" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+</div>
+<div class="p-lg">
+<button class="w-full py-md bg-secondary-container text-on-secondary-container font-label-md text-label-md rounded-lg hover:opacity-90 transition-opacity">
+                Triage Inbox
+            </button>
+</div>
+</nav>
+<!-- Top App Bar -->
+<header class="flex justify-between items-center w-full px-lg py-md h-16 ml-[280px] max-w-[calc(100%-280px)] bg-surface dark:bg-surface-dim border-b border-outline-variant dark:border-outline sticky top-0 z-40">
+<div class="flex items-center gap-md">
+<h1 class="font-headline-sm text-headline-sm text-primary dark:text-primary-fixed">Workflow Settings</h1>
+</div>
+<div class="flex items-center gap-lg">
+<div class="flex items-center bg-surface-container border border-outline-variant rounded-full px-md py-xs focus-within:ring-2 focus-within:ring-secondary transition-all">
+<span class="material-symbols-outlined text-on-surface-variant text-sm">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-body-md font-body-md w-64" placeholder="Search parameters..." type="text"/>
+</div>
+<div class="flex items-center gap-md">
+<button class="material-symbols-outlined text-on-surface-variant hover:bg-surface-container-high p-xs rounded-full">notifications</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:bg-surface-container-high p-xs rounded-full">history</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:bg-surface-container-high p-xs rounded-full">help</button>
+<div class="h-8 w-8 rounded-full overflow-hidden bg-surface-container-highest border border-outline-variant">
+<img class="h-full w-full object-cover" data-alt="Close up studio portrait of a serious manufacturing logistics operator in a clean industrial environment. The lighting is crisp and professional, reflecting a modern corporate aesthetic with a neutral color palette. The subject exudes authority and precision, consistent with high-stakes supply chain management roles." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDojPGxoX-fgxpqbEJJHMRf5bnenn-96Ls2hFckRDqi9qdfiD4MKMN26DkJ1JRYjXgn9EtiATC348Yd5fitgBKv-4-nw-fwxiubNY-14fpB4n55u1BlzJztUzs3Pg4qnDzOIBCy7n4ET9z5tWi0LtIehUzKKD10l3I6rQdGAAjC2id-dpv5qc4rZjyZZOCId-zl7jfJRJ1VUGiOSKTDLsD4g1P9w_G56S3BvxkqqQJbs40xGQJflf3tHP6wfG1VP-sSQQLNcy9h7aA"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-[280px] p-lg space-y-lg">
+<!-- Top Row: AI Engine Status & Infrastructure -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-lg">
+<!-- LLM Connection: Ollama -->
+<div class="bg-surface-container-low border border-outline-variant p-lg rounded-xl flex flex-col gap-md">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-secondary">memory</span>
+<h2 class="font-title-lg text-title-lg">LLM Connection</h2>
+</div>
+<span class="flex items-center gap-xs px-sm py-xs bg-green-100 text-green-800 rounded-full font-label-md text-label-md">
+<span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                        Active
+                    </span>
+</div>
+<div class="space-y-xs">
+<p class="font-body-sm text-body-sm text-on-surface-variant">Provider</p>
+<p class="font-title-lg text-title-lg text-primary">Ollama (Local)</p>
+</div>
+<div class="mt-auto pt-md border-t border-outline-variant flex justify-between items-center">
+<span class="font-mono-data text-mono-data text-on-surface-variant">Model: llama3-7b-instruct</span>
+<button class="text-secondary font-label-md text-label-md hover:underline">Re-test Connection</button>
+</div>
+</div>
+<!-- Vector DB: Qdrant -->
+<div class="bg-surface-container-low border border-outline-variant p-lg rounded-xl flex flex-col gap-md">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-secondary">database</span>
+<h2 class="font-title-lg text-title-lg">Vector Database</h2>
+</div>
+<span class="flex items-center gap-xs px-sm py-xs bg-surface-container-highest text-on-surface-variant rounded-full font-label-md text-label-md">
+                        Indexing
+                    </span>
+</div>
+<div class="space-y-xs">
+<p class="font-body-sm text-body-sm text-on-surface-variant">Provider</p>
+<p class="font-title-lg text-title-lg text-primary">Qdrant Cloud</p>
+</div>
+<div class="mt-auto pt-md border-t border-outline-variant flex justify-between items-center">
+<div class="flex flex-col">
+<span class="font-mono-data text-mono-data text-primary font-bold">1,240,582</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Total Vectors Indexed</span>
+</div>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary">refresh</button>
+</div>
+</div>
+<!-- Duplicate Prevention -->
+<div class="bg-surface-container-low border border-outline-variant p-lg rounded-xl flex flex-col gap-md">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-secondary">copy_all</span>
+<h2 class="font-title-lg text-title-lg">Duplicate Prevention</h2>
+</div>
+<div class="flex-1 flex flex-col justify-center">
+<div class="flex items-center justify-between p-md bg-surface border border-outline-variant rounded-lg">
+<div class="space-y-xs">
+<p class="font-label-md text-label-md text-primary uppercase tracking-wider">Semantic Similarity Check</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Prevent double-assignment of requests</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary"></div>
+</label>
+</div>
+</div>
+<div class="pt-md border-t border-outline-variant">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Threshold Sensitivity</span>
+<span class="font-mono-data text-mono-data text-primary">0.85</span>
+</div>
+<input class="w-full h-1 bg-surface-container-highest rounded-lg appearance-none cursor-pointer accent-secondary mt-xs" type="range"/>
+</div>
+</div>
+</div>
+<!-- Section: Classification Rules -->
+<div class="bg-white border border-outline-variant rounded-xl overflow-hidden industrial-shadow">
+<div class="px-lg py-md border-b border-outline-variant bg-surface flex justify-between items-center">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary">account_tree</span>
+<h3 class="font-headline-sm text-headline-sm">Email Classification Rules</h3>
+</div>
+<button class="flex items-center gap-xs px-md py-sm bg-primary text-on-primary rounded font-label-md text-label-md hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-sm">add</span>
+                    New Rule
+                </button>
+</div>
+<div class="p-lg">
+<div class="space-y-sm">
+<!-- Rule 1 -->
+<div class="group flex items-center gap-md p-md bg-surface-container-low border border-outline-variant rounded hover:border-secondary transition-all">
+<span class="material-symbols-outlined text-outline group-hover:text-secondary rule-drag-handle">drag_indicator</span>
+<div class="grid grid-cols-12 gap-md flex-1 items-center">
+<div class="col-span-1">
+<span class="font-mono-data text-mono-data text-on-surface-variant">01</span>
+</div>
+<div class="col-span-4">
+<div class="flex items-center gap-xs">
+<span class="font-label-md text-label-md text-on-surface-variant bg-surface-variant px-sm py-xs rounded">Keyword</span>
+<span class="font-body-md text-body-md font-bold text-primary">'Quotation'</span>
+</div>
+</div>
+<div class="col-span-1 flex justify-center">
+<span class="material-symbols-outlined text-outline">arrow_forward</span>
+</div>
+<div class="col-span-4">
+<div class="flex items-center gap-xs">
+<span class="font-label-md text-label-md text-on-surface-variant bg-surface-variant px-sm py-xs rounded">Route To</span>
+<div class="flex items-center gap-xs">
+<div class="w-6 h-6 rounded-full bg-secondary-fixed flex items-center justify-center text-[10px] font-bold text-on-secondary-fixed">JD</div>
+<span class="font-body-md text-body-md text-primary">James Donaldson (Procurement)</span>
+</div>
+</div>
+</div>
+<div class="col-span-2 flex justify-end gap-sm opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary">edit</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-error">delete</button>
+</div>
+</div>
+</div>
+<!-- Rule 2 -->
+<div class="group flex items-center gap-md p-md bg-surface-container-low border border-outline-variant rounded hover:border-secondary transition-all">
+<span class="material-symbols-outlined text-outline group-hover:text-secondary rule-drag-handle">drag_indicator</span>
+<div class="grid grid-cols-12 gap-md flex-1 items-center">
+<div class="col-span-1">
+<span class="font-mono-data text-mono-data text-on-surface-variant">02</span>
+</div>
+<div class="col-span-4">
+<div class="flex items-center gap-xs">
+<span class="font-label-md text-label-md text-on-surface-variant bg-surface-variant px-sm py-xs rounded">Sentiment</span>
+<span class="font-body-md text-body-md font-bold text-primary">'Urgent / Critical'</span>
+</div>
+</div>
+<div class="col-span-1 flex justify-center">
+<span class="material-symbols-outlined text-outline">arrow_forward</span>
+</div>
+<div class="col-span-4">
+<div class="flex items-center gap-xs">
+<span class="font-label-md text-label-md text-on-surface-variant bg-surface-variant px-sm py-xs rounded">Action</span>
+<span class="font-body-md text-body-md text-primary">Slack Alert: #supply-chain-ops</span>
+</div>
+</div>
+<div class="col-span-2 flex justify-end gap-sm opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary">edit</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-error">delete</button>
+</div>
+</div>
+</div>
+<!-- Rule 3 -->
+<div class="group flex items-center gap-md p-md bg-surface-container-low border border-outline-variant rounded hover:border-secondary transition-all">
+<span class="material-symbols-outlined text-outline group-hover:text-secondary rule-drag-handle">drag_indicator</span>
+<div class="grid grid-cols-12 gap-md flex-1 items-center">
+<div class="col-span-1">
+<span class="font-mono-data text-mono-data text-on-surface-variant">03</span>
+</div>
+<div class="col-span-4">
+<div class="flex items-center gap-xs">
+<span class="font-label-md text-label-md text-on-surface-variant bg-surface-variant px-sm py-xs rounded">Origin</span>
+<span class="font-body-md text-body-md font-bold text-primary">'Domain: *.de'</span>
+</div>
+</div>
+<div class="col-span-1 flex justify-center">
+<span class="material-symbols-outlined text-outline">arrow_forward</span>
+</div>
+<div class="col-span-4">
+<div class="flex items-center gap-xs">
+<span class="font-label-md text-label-md text-on-surface-variant bg-surface-variant px-sm py-xs rounded">Route To</span>
+<div class="flex items-center gap-xs">
+<div class="w-6 h-6 rounded-full bg-tertiary-fixed flex items-center justify-center text-[10px] font-bold text-on-tertiary-fixed">HS</div>
+<span class="font-body-md text-body-md text-primary">Hanna Schmidt (EU Logistics)</span>
+</div>
+</div>
+</div>
+<div class="col-span-2 flex justify-end gap-sm opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary">edit</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-error">delete</button>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-lg p-lg border-2 border-dashed border-outline-variant rounded bg-surface-container flex flex-col items-center gap-sm text-on-surface-variant cursor-pointer hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-display-lg opacity-40">post_add</span>
+<p class="font-body-md text-body-md">Drag components here or click to build a custom conditional rule.</p>
+</div>
+</div>
+</div>
+<!-- System Activity Footer -->
+<div class="flex justify-between items-center py-md border-t border-outline-variant">
+<div class="flex items-center gap-md">
+<div class="flex items-center gap-xs">
+<span class="w-2 h-2 bg-green-500 rounded-full"></span>
+<span class="font-label-md text-label-md text-on-surface-variant">System Latency: 42ms</span>
+</div>
+<div class="h-4 w-px bg-outline-variant"></div>
+<div class="flex items-center gap-xs">
+<span class="font-label-md text-label-md text-on-surface-variant">Last Rule Deployment: 12 minutes ago</span>
+</div>
+</div>
+<div class="flex gap-md">
+<button class="px-lg py-sm border border-outline rounded font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high transition-colors">Export Logs</button>
+<button class="px-lg py-sm bg-secondary text-white rounded font-label-md text-label-md hover:shadow-lg transition-all">Save All Changes</button>
+</div>
+</div>
+</main>
+<script>
+        // Micro-interactions for the range slider value display
+        const slider = document.querySelector('input[type="range"]');
+        const sliderValue = slider.previousElementSibling.lastElementChild;
+        
+        slider.addEventListener('input', (e) => {
+            sliderValue.textContent = (e.target.value / 100).toFixed(2);
+        });
+
+        // Add visual feedback for toggle state
+        const toggle = document.querySelector('input[type="checkbox"]');
+        toggle.addEventListener('change', (e) => {
+            const container = e.target.closest('.flex-1').querySelector('.bg-surface');
+            if (e.target.checked) {
+                container.style.borderColor = '#0058be';
+            } else {
+                container.style.borderColor = '#c4c6cd';
+            }
+        });
+    </script>
+</body></html>

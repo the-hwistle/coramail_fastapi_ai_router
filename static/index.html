@@ -1,0 +1,689 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CoRA Mail AI Router</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #05162b;
+      --secondary: #0058be;
+      --secondary-soft: #d8e2ff;
+      --tertiary-soft: #fedeae;
+      --bg: #fbf9fb;
+      --surface: #ffffff;
+      --surface-low: #f4f2f4;
+      --surface-mid: #eae7ea;
+      --line: #d7d5d8;
+      --text: #1b1b1d;
+      --muted: #62666f;
+      --danger: #ba1a1a;
+      --danger-soft: #ffdad6;
+      --ok: #0f7a49;
+      --shadow: 0 12px 34px rgba(5, 22, 43, .08);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 0;
+      overflow: hidden;
+    }
+    button, input, select, textarea {
+      font: inherit;
+      letter-spacing: 0;
+    }
+    button {
+      border: 0;
+      cursor: pointer;
+      transition: transform .12s ease, background .16s ease, color .16s ease, border .16s ease;
+    }
+    button:active { transform: scale(.98); }
+    button:disabled { opacity: .6; cursor: wait; }
+    .material-symbols-outlined {
+      font-family: "Material Symbols Outlined";
+      font-weight: normal;
+      font-style: normal;
+      font-size: 22px;
+      line-height: 1;
+      font-feature-settings: "liga";
+      font-variation-settings: "FILL" 0, "wght" 450, "GRAD" 0, "opsz" 24;
+    }
+    .app { display: flex; min-height: 100vh; }
+    .sidebar {
+      width: 280px;
+      height: 100vh;
+      background: var(--primary);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      flex: 0 0 280px;
+    }
+    .brand { padding: 26px 24px 30px; font-weight: 900; font-size: 18px; }
+    .nav { display: flex; flex-direction: column; gap: 4px; }
+    .nav button {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      width: 100%;
+      min-height: 42px;
+      padding: 9px 24px;
+      background: transparent;
+      color: rgba(255,255,255,.72);
+      text-align: left;
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+    .nav button.active {
+      color: var(--secondary-soft);
+      border-left: 4px solid var(--secondary-soft);
+      padding-left: 20px;
+    }
+    .side-card {
+      margin: auto 24px 24px;
+      padding: 16px;
+      background: #123050;
+      border-radius: 8px;
+    }
+    .side-card p { margin: 0 0 10px; color: rgba(255,255,255,.72); font-size: 13px; }
+    .side-card button {
+      width: 100%;
+      min-height: 36px;
+      border-radius: 6px;
+      background: var(--secondary);
+      color: white;
+      font-weight: 800;
+      font-size: 12px;
+    }
+    .main { flex: 1; min-width: 0; height: 100vh; display: flex; flex-direction: column; }
+    .topbar {
+      height: 64px;
+      flex: 0 0 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--line);
+    }
+    .title { font-size: 24px; line-height: 32px; font-weight: 800; color: var(--primary); }
+    .top-actions { display: flex; align-items: center; gap: 12px; color: var(--muted); }
+    .icon-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 18px;
+      background: transparent;
+      color: var(--muted);
+      display: grid;
+      place-items: center;
+    }
+    .icon-btn:hover { background: var(--surface-mid); color: var(--primary); }
+    .avatar { width: 32px; height: 32px; border-radius: 16px; background: var(--secondary-soft); color: var(--primary); display: grid; place-items: center; font-weight: 900; }
+    .content { flex: 1; min-height: 0; overflow: auto; padding: 24px; }
+    .view { display: none; }
+    .view.active { display: block; }
+    .section-head { display: flex; justify-content: space-between; align-items: end; gap: 16px; margin-bottom: 24px; }
+    h1, h2, h3, p { margin-top: 0; }
+    h2 { margin-bottom: 4px; font-size: 24px; line-height: 32px; color: var(--primary); }
+    h3 { margin-bottom: 0; font-size: 18px; line-height: 24px; color: var(--primary); }
+    .subtle { color: var(--muted); font-size: 14px; }
+    .btn {
+      min-height: 38px;
+      padding: 0 14px;
+      border-radius: 6px;
+      background: var(--primary);
+      color: white;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-weight: 800;
+      font-size: 12px;
+    }
+    .btn.secondary { background: var(--secondary); }
+    .btn.ghost { background: var(--surface); color: var(--primary); border: 1px solid var(--line); }
+    .stats { display: grid; grid-template-columns: repeat(4, minmax(160px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .stat, .panel {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+    .stat { padding: 20px; }
+    .label { color: var(--muted); font-size: 12px; line-height: 16px; font-weight: 800; text-transform: uppercase; }
+    .stat-value { margin-top: 10px; font-size: 32px; line-height: 40px; font-weight: 900; color: var(--primary); }
+    .grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(320px, 1fr); gap: 16px; align-items: start; }
+    .panel { overflow: hidden; }
+    .panel-head {
+      min-height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--line);
+      background: var(--surface-low);
+    }
+    .panel-body { padding: 20px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { color: var(--muted); font-size: 12px; line-height: 16px; text-transform: uppercase; background: #fff; }
+    td { font-size: 13px; line-height: 18px; }
+    tr:hover td { background: var(--surface-low); }
+    .mono { font-size: 13px; line-height: 20px; }
+    .truncate { max-width: 290px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      min-height: 22px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: var(--surface-mid);
+      color: var(--primary);
+      font-size: 11px;
+      line-height: 14px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+    .chip.blue { background: var(--secondary-soft); color: #004395; }
+    .chip.gold { background: var(--tertiary-soft); color: #584320; }
+    .chip.red { background: var(--danger-soft); color: #93000a; }
+    .row-status { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 800; color: var(--secondary); }
+    .donut {
+      width: 132px;
+      height: 132px;
+      border-radius: 50%;
+      background: conic-gradient(var(--secondary) 0 42%, #2170e4 42% 70%, var(--tertiary-soft) 70% 86%, var(--danger) 86% 100%);
+      display: grid;
+      place-items: center;
+      margin: 20px auto;
+    }
+    .donut-inner { width: 92px; height: 92px; border-radius: 50%; background: white; display: grid; place-items: center; text-align: center; font-weight: 900; color: var(--primary); }
+    .search-box {
+      max-width: 920px;
+      margin: 0 auto 20px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: white;
+      box-shadow: var(--shadow);
+    }
+    .search-box input, .input, textarea, select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--text);
+      padding: 10px 12px;
+      outline: none;
+    }
+    .search-box input { border: 0; font-size: 16px; }
+    textarea { min-height: 108px; resize: vertical; }
+    .results { display: grid; gap: 12px; }
+    .result-card {
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: white;
+    }
+    .result-card strong { color: var(--primary); }
+    .result-card p { color: #3f4650; font-size: 13px; line-height: 20px; margin-bottom: 0; }
+    .split { display: grid; grid-template-columns: 1fr 1fr; min-height: calc(100vh - 112px); margin: -24px; }
+    .email-pane { background: white; border-right: 1px solid var(--line); padding: 32px; overflow: auto; }
+    .analysis-pane { background: var(--bg); padding: 0; overflow: auto; }
+    .sticky-actions { position: sticky; top: 0; z-index: 2; display: grid; grid-template-columns: 1fr 1fr 44px; gap: 12px; padding: 18px; background: rgba(251,249,251,.88); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+    .email-body { margin-top: 24px; padding-left: 18px; border-left: 3px solid var(--danger); font-size: 16px; line-height: 26px; white-space: pre-wrap; }
+    .attachment { display: flex; gap: 12px; align-items: center; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-low); margin-top: 10px; }
+    .file-icon { width: 42px; height: 52px; border: 1px solid var(--line); background: white; display: grid; place-items: center; border-radius: 4px; color: var(--danger); }
+    .analysis-stack { padding: 24px; display: grid; gap: 16px; }
+    .info-table td:first-child { width: 36%; color: var(--muted); font-weight: 800; }
+    .settings-grid { display: grid; grid-template-columns: repeat(3, minmax(220px, 1fr)); gap: 16px; margin-bottom: 18px; }
+    .rule-row { display: grid; grid-template-columns: 34px 1fr 32px 1.2fr auto; gap: 14px; align-items: center; padding: 14px; background: var(--surface-low); border: 1px solid var(--line); border-radius: 8px; margin-bottom: 10px; }
+    .notice { padding: 12px 14px; border: 1px solid var(--line); background: var(--surface-low); border-radius: 8px; color: var(--muted); font-size: 13px; line-height: 20px; }
+    .empty { padding: 28px; text-align: center; color: var(--muted); }
+    .loading { opacity: .66; }
+    @media (max-width: 1120px) {
+      body { overflow: auto; }
+      .app { display: block; }
+      .sidebar { width: 100%; height: auto; flex-direction: row; align-items: center; overflow-x: auto; }
+      .brand { padding: 16px; white-space: nowrap; }
+      .nav { flex-direction: row; }
+      .nav button { padding: 10px 14px; white-space: nowrap; }
+      .side-card { display: none; }
+      .main { height: auto; min-height: 100vh; }
+      .topbar { gap: 12px; }
+      .title { min-width: 0; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 20px; line-height: 28px; }
+      .top-actions { flex: 0 0 auto; gap: 6px; }
+      .content { overflow: visible; }
+      .stats, .grid, .settings-grid, .split { grid-template-columns: 1fr; }
+      .split { margin: 0; }
+      .email-pane { border-right: 0; border-bottom: 1px solid var(--line); }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">ForgeMail AI</div>
+      <nav class="nav" aria-label="Main navigation">
+        <button class="active" data-view="dashboard"><span class="material-symbols-outlined">dashboard</span>Dashboard</button>
+        <button data-view="inbox"><span class="material-symbols-outlined">inbox</span>Inbox</button>
+        <button data-view="search"><span class="material-symbols-outlined">search</span>Search</button>
+        <button data-view="analytics"><span class="material-symbols-outlined">analytics</span>Analytics</button>
+        <button data-view="settings"><span class="material-symbols-outlined">settings</span>Settings</button>
+      </nav>
+      <div class="side-card">
+        <p>Supply Chain Intelligence</p>
+        <button id="triageBtn">Triage Inbox</button>
+      </div>
+    </aside>
+    <section class="main">
+      <header class="topbar">
+        <div class="title" id="pageTitle">Mail Classification Dashboard</div>
+        <div class="top-actions">
+          <button class="icon-btn" id="refreshBtn" title="Refresh"><span class="material-symbols-outlined">refresh</span></button>
+          <button class="icon-btn" title="History"><span class="material-symbols-outlined">history</span></button>
+          <button class="icon-btn" title="Notifications"><span class="material-symbols-outlined">notifications</span></button>
+          <div class="avatar">AI</div>
+        </div>
+      </header>
+      <main class="content">
+        <section class="view active" id="dashboardView">
+          <div class="section-head">
+            <div>
+              <h2>Mail Classification Dashboard</h2>
+              <p class="subtle">Real-time supply chain communication triage</p>
+            </div>
+            <div>
+              <button class="btn ghost" id="fetchBtn"><span class="material-symbols-outlined">mark_email_unread</span>Sync Gmail</button>
+              <button class="btn secondary" id="reindexBtn"><span class="material-symbols-outlined">database</span>Reindex</button>
+            </div>
+          </div>
+          <div class="stats" id="stats"></div>
+          <div class="grid">
+            <div class="panel">
+              <div class="panel-head">
+                <h3>Recent Mail Streams</h3>
+                <span class="row-status"><span class="material-symbols-outlined">radio_button_checked</span>Live API</span>
+              </div>
+              <div style="overflow:auto">
+                <table>
+                  <thead>
+                    <tr><th>Status</th><th>Sender</th><th>Subject</th><th>Classification</th><th>Receiver</th><th>Time</th></tr>
+                  </thead>
+                  <tbody id="mailRows"></tbody>
+                </table>
+              </div>
+            </div>
+            <aside class="panel">
+              <div class="panel-head"><h3>Category Distribution</h3></div>
+              <div class="panel-body">
+                <div class="donut"><div class="donut-inner"><div><div id="categorizedPct">0%</div><span class="label">Categorized</span></div></div></div>
+                <div id="categoryLegend"></div>
+              </div>
+            </aside>
+          </div>
+        </section>
+
+        <section class="view" id="inboxView">
+          <div class="split">
+            <section class="email-pane">
+              <div class="section-head">
+                <div>
+                  <h2 id="detailSubject">Email Detail</h2>
+                  <p class="subtle" id="detailMeta">메일을 선택하세요.</p>
+                </div>
+                <select id="emailSelect" class="input" style="max-width:320px"></select>
+              </div>
+              <div id="emailDetail"></div>
+            </section>
+            <section class="analysis-pane">
+              <div class="sticky-actions">
+                <button class="btn secondary" id="confirmRoutingBtn"><span class="material-symbols-outlined">check_circle</span>Confirm Routing</button>
+                <button class="btn" id="classifySelectedBtn"><span class="material-symbols-outlined">auto_awesome</span>Classify</button>
+                <button class="btn ghost"><span class="material-symbols-outlined">more_vert</span></button>
+              </div>
+              <div class="analysis-stack" id="analysisDetail"></div>
+            </section>
+          </div>
+        </section>
+
+        <section class="view" id="searchView">
+          <div class="search-box">
+            <input id="searchInput" value="FM250016318 견적서의 납기와 총액을 찾아줘" placeholder="FM250016318 견적서의 납기와 총액을 찾아줘" />
+            <button class="btn secondary" id="searchBtn"><span class="material-symbols-outlined">neurology</span>Search</button>
+          </div>
+          <div class="grid">
+            <div class="panel">
+              <div class="panel-head"><h3>Generated Answer</h3><span class="label">Ollama + Qdrant</span></div>
+              <div class="panel-body" id="answerBox"><p class="subtle">질문을 입력하고 검색하세요.</p></div>
+            </div>
+            <div class="panel">
+              <div class="panel-head"><h3>Query Intent</h3></div>
+              <div class="panel-body" id="intentBox"><p class="subtle">검색 의도가 여기에 표시됩니다.</p></div>
+            </div>
+          </div>
+          <div class="panel" style="margin-top:16px">
+            <div class="panel-head"><h3>Evidence Results</h3></div>
+            <div class="panel-body"><div class="results" id="resultList"></div></div>
+          </div>
+        </section>
+
+        <section class="view" id="analyticsView">
+          <div class="section-head">
+            <div>
+              <h2>Routing Analytics</h2>
+              <p class="subtle">중복 전달 방지와 카테고리 분포를 확인합니다.</p>
+            </div>
+          </div>
+          <div class="stats" id="analyticsStats"></div>
+          <div class="panel">
+            <div class="panel-head"><h3>Attachment Intelligence</h3></div>
+            <div class="panel-body" id="attachmentStats"></div>
+          </div>
+        </section>
+
+        <section class="view" id="settingsView">
+          <div class="section-head">
+            <div>
+              <h2>Workflow Settings</h2>
+              <p class="subtle">로컬 LLM, Qdrant, 분류 규칙 상태</p>
+            </div>
+          </div>
+          <div class="settings-grid" id="settingsCards"></div>
+          <div class="panel">
+            <div class="panel-head"><h3>Email Classification Rules</h3><button class="btn ghost"><span class="material-symbols-outlined">add</span>New Rule</button></div>
+            <div class="panel-body" id="ruleRows"></div>
+          </div>
+        </section>
+      </main>
+    </section>
+  </div>
+
+  <script>
+    const state = { summary: null, emails: [], selectedIndex: 0, health: null };
+    const titles = {
+      dashboard: "Mail Classification Dashboard",
+      inbox: "Email Detail & AI Analysis",
+      search: "Search Knowledge",
+      analytics: "Routing Analytics",
+      settings: "Workflow Settings"
+    };
+    const categoryLabels = {
+      rfq: "문의", quote: "견적", order: "발주", payment: "결제", delivery: "납기", technical: "기술", general: "기타", unclassified: "미분류"
+    };
+    const routeNames = {
+      sales: "발주담당자 1", quote_request: "견적담당자", quote_sent: "영업담당자", order: "발주담당자 2",
+      accounting: "회계담당자", payment: "회계담당자", logistics: "물류담당자", delivery: "납기담당자",
+      engineering: "기술담당자", technical: "기술담당자", general: "공통메일함"
+    };
+
+    const $ = (id) => document.getElementById(id);
+    const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
+    const fmtDate = (value) => value ? String(value).replace(/^(\w{3}, )?/, "").slice(0, 22) : "-";
+    const categoryChip = (category) => `<span class="chip ${category === "technical" ? "blue" : category === "payment" ? "red" : category === "rfq" || category === "quote" ? "gold" : ""}">${escapeHtml(categoryLabels[category] || category || "미분류")}</span>`;
+    const routeLabel = (routing = []) => {
+      const labels = routing.map((item) => routeNames[item] || item).filter(Boolean);
+      return labels[0] || "라우팅 대기";
+    };
+
+    async function api(path, options = {}) {
+      const response = await fetch(path, {
+        headers: { "Content-Type": "application/json" },
+        ...options
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.detail || response.statusText);
+      return data;
+    }
+
+    function setBusy(element, busy, text) {
+      if (!element) return;
+      element.disabled = busy;
+      element.classList.toggle("loading", busy);
+      if (text) element.dataset.originalText ? null : element.dataset.originalText = element.innerHTML;
+      if (busy && text) element.innerHTML = text;
+      if (!busy && element.dataset.originalText) element.innerHTML = element.dataset.originalText;
+    }
+
+    function showView(name) {
+      document.querySelectorAll(".nav button").forEach((button) => button.classList.toggle("active", button.dataset.view === name));
+      document.querySelectorAll(".view").forEach((view) => view.classList.remove("active"));
+      $(`${name}View`).classList.add("active");
+      $("pageTitle").textContent = titles[name];
+      if (name === "inbox") renderInbox();
+      if (name === "analytics") renderAnalytics();
+      if (name === "settings") renderSettings();
+    }
+
+    async function loadData() {
+      const [healthResult, emailsResult] = await Promise.allSettled([
+        api("/api/health"),
+        api("/api/emails?limit=80")
+      ]);
+      state.health = healthResult.status === "fulfilled" ? healthResult.value : { ok: false, startup_error: healthResult.reason?.message };
+      const emails = emailsResult.status === "fulfilled" ? emailsResult.value : { items: [], total: 0 };
+      state.emails = emails.items || [];
+      state.summary = {
+        email_count: state.emails.length,
+        attachment_count: state.emails.reduce((total, email) => total + (email.attachment_count || 0), 0),
+        classified_count: state.emails.filter((email) => email.classification?.mail_category).length,
+        routed_count: state.emails.filter((email) => email.classification?.routing_labels?.length).length,
+        duplicate_risk_count: 0,
+        mail_categories: state.emails.reduce((acc, email) => {
+          const key = email.classification?.mail_category || "unclassified";
+          acc[key] = (acc[key] || 0) + 1;
+          return acc;
+        }, {}),
+        attachment_categories: {},
+        qdrant_points: { emails: "-", attachments: "-", status: "summary loading" }
+      };
+      renderDashboard();
+      renderInbox();
+      renderAnalytics();
+      renderSettings();
+      api("/api/summary").then((summary) => {
+        state.summary = summary;
+        renderDashboard();
+        renderAnalytics();
+        renderSettings();
+      }).catch((error) => {
+        state.summary.qdrant_points.status = error.message;
+        renderSettings();
+      });
+    }
+
+    function renderDashboard() {
+      const s = state.summary || {};
+      const classifiedPct = s.email_count ? Math.round((s.classified_count / s.email_count) * 100) : 0;
+      $("stats").innerHTML = [
+        ["Total Mails", s.email_count || 0, "mail"],
+        ["AI Auto-Routed", `${classifiedPct}%`, "auto_awesome"],
+        ["Duplicate Risk", s.duplicate_risk_count || 0, "verified_user"],
+        ["Attachments", s.attachment_count || 0, "attach_file"]
+      ].map(([label, value, icon]) => `
+        <div class="stat"><span class="label">${label}</span><div style="display:flex;align-items:center;justify-content:space-between"><div class="stat-value">${value}</div><span class="material-symbols-outlined" style="color:var(--secondary)">${icon}</span></div></div>
+      `).join("");
+      $("categorizedPct").textContent = `${classifiedPct}%`;
+      const cats = Object.entries(s.mail_categories || {});
+      $("categoryLegend").innerHTML = cats.length ? cats.map(([key, count]) => `
+        <div style="display:flex;justify-content:space-between;gap:12px;margin:10px 0"><span>${categoryChip(key)}</span><strong>${count}</strong></div>
+      `).join("") : `<div class="empty">분류 리포트가 아직 없습니다.</div>`;
+      $("mailRows").innerHTML = state.emails.length ? state.emails.slice(0, 12).map((email) => {
+        const c = email.classification || {};
+        return `<tr data-index="${email.index}">
+          <td><span class="row-status"><span class="material-symbols-outlined">${c.mail_category ? "auto_awesome" : "pending"}</span>${c.mail_category ? "AI OK" : "PENDING"}</span></td>
+          <td class="mono">${escapeHtml(email.from)}</td>
+          <td class="truncate"><strong>${escapeHtml(email.subject || "(no subject)")}</strong></td>
+          <td>${categoryChip(c.mail_category || "unclassified")}</td>
+          <td>${escapeHtml(routeLabel(c.routing_labels || []))}</td>
+          <td class="subtle">${escapeHtml(fmtDate(email.date))}</td>
+        </tr>`;
+      }).join("") : `<tr><td colspan="6"><div class="empty">SQLite에 저장된 메일이 없습니다.</div></td></tr>`;
+      document.querySelectorAll("#mailRows tr[data-index]").forEach((row) => row.addEventListener("click", () => {
+        state.selectedIndex = Number(row.dataset.index);
+        showView("inbox");
+      }));
+    }
+
+    function renderInbox() {
+      if (!state.emails.length) {
+        $("emailSelect").innerHTML = "";
+        $("emailDetail").innerHTML = `<div class="empty">표시할 이메일이 없습니다.</div>`;
+        $("analysisDetail").innerHTML = `<div class="empty">분석 결과가 없습니다.</div>`;
+        return;
+      }
+      if (!state.emails.some((email) => email.index === state.selectedIndex)) state.selectedIndex = state.emails[0].index;
+      $("emailSelect").innerHTML = state.emails.map((email) => `<option value="${email.index}" ${email.index === state.selectedIndex ? "selected" : ""}>${escapeHtml((email.subject || "(no subject)").slice(0, 64))}</option>`).join("");
+      const email = state.emails.find((item) => item.index === state.selectedIndex) || state.emails[0];
+      const c = email.classification || {};
+      $("detailSubject").textContent = email.subject || "(no subject)";
+      $("detailMeta").textContent = `${email.from || "-"} · ${fmtDate(email.date)}`;
+      $("emailDetail").innerHTML = `
+        <div>${categoryChip(c.mail_category || "unclassified")} <span class="subtle" style="margin-left:8px">${escapeHtml(email.to || "")}</span></div>
+        <div class="email-body">${escapeHtml(email.body || email.body_preview || "본문 없음")}</div>
+        <div style="margin-top:28px"><span class="label">${email.attachment_count} Attachment(s)</span>
+          ${(email.attachments || []).map((file) => `<div class="attachment"><div class="file-icon"><span class="material-symbols-outlined">description</span></div><div><strong>${escapeHtml(file.filename || "attachment")}</strong><div class="subtle">${escapeHtml(file.content_type || "")}</div></div></div>`).join("")}
+        </div>`;
+      renderAnalysis(email);
+    }
+
+    function renderAnalysis(email) {
+      const c = email.classification || {};
+      const reasons = c.reasons || [];
+      const refs = c.business_refs || [];
+      const attachments = c.attachments || [];
+      $("analysisDetail").innerHTML = `
+        <div class="panel"><div class="panel-head"><h3>AI Executive Summary</h3><span class="chip blue">${Math.round((c.confidence || 0) * 100)}% confidence</span></div>
+          <div class="panel-body">
+            ${reasons.length ? `<ul>${reasons.map((reason) => `<li>${escapeHtml(reason)}</li>`).join("")}</ul>` : `<p class="subtle">아직 분류 결과가 없습니다. Classify를 실행하세요.</p>`}
+          </div>
+        </div>
+        <div class="panel"><div class="panel-head"><h3>Extracted Entities</h3></div>
+          <table class="info-table"><tbody>
+            <tr><td>Business Ref</td><td>${refs.length ? refs.map(escapeHtml).join(", ") : "-"}</td></tr>
+            <tr><td>Vessel</td><td>${(c.vessel_names || []).map(escapeHtml).join(", ") || "-"}</td></tr>
+            <tr><td>Routing</td><td>${escapeHtml(routeLabel(c.routing_labels || []))}</td></tr>
+            <tr><td>Structured Docs</td><td>${c.has_structured_document ? "Yes" : "No"}</td></tr>
+          </tbody></table>
+        </div>
+        <div class="panel"><div class="panel-head"><h3>Attachment VLM / OCR Insight</h3></div>
+          <div class="panel-body">${attachments.length ? attachments.map((item) => `<div class="notice"><strong>${escapeHtml(item.filename)}</strong><br>${escapeHtml(item.document_category_label || item.document_category || "미분류")} · ${escapeHtml(item.form_type || "")}</div>`).join("") : `<p class="subtle">첨부 분석 결과가 없습니다.</p>`}</div>
+        </div>
+        <div class="panel"><div class="panel-head"><h3>AI Generated Response Draft</h3></div>
+          <div class="panel-body"><div class="notice">담당자 ${escapeHtml(routeLabel(c.routing_labels || []))}에게 전달할 메일 초안 생성 기능을 연결할 수 있는 영역입니다.</div></div>
+        </div>`;
+    }
+
+    async function runSearch() {
+      const button = $("searchBtn");
+      setBusy(button, true, `<span class="material-symbols-outlined">hourglass_top</span>Searching`);
+      $("answerBox").innerHTML = `<p class="subtle">검색 및 답변 생성 중...</p>`;
+      $("resultList").innerHTML = "";
+      try {
+        const data = await api("/api/search", {
+          method: "POST",
+          body: JSON.stringify({ query: $("searchInput").value, limit: 5, with_answer: true })
+        });
+        $("answerBox").innerHTML = `<div style="white-space:pre-wrap;line-height:1.65">${escapeHtml(data.answer || "답변 없음")}</div>`;
+        $("intentBox").innerHTML = Object.entries(data.intent || {}).map(([key, value]) => `<div style="display:flex;justify-content:space-between;gap:14px;margin:8px 0"><span class="label">${escapeHtml(key)}</span><strong>${escapeHtml(Array.isArray(value) ? value.join(", ") : value)}</strong></div>`).join("");
+        $("resultList").innerHTML = (data.results || []).map((result) => `
+          <article class="result-card">
+            <strong>${escapeHtml(result.source)}</strong> ${result.category ? categoryChip(result.document_category || result.category) : ""}
+            <div class="subtle">${escapeHtml(result.title)} · score ${escapeHtml(result.final_score)}</div>
+            <p>${escapeHtml(result.preview || "본문 미리보기 없음")}</p>
+          </article>
+        `).join("") || `<div class="empty">검색 결과가 없습니다.</div>`;
+      } catch (error) {
+        $("answerBox").innerHTML = `<div class="notice" style="color:var(--danger)">${escapeHtml(error.message)}</div>`;
+      } finally {
+        setBusy(button, false);
+      }
+    }
+
+    async function classifySelected() {
+      const button = $("classifySelectedBtn");
+      setBusy(button, true, `<span class="material-symbols-outlined">hourglass_top</span>Classifying`);
+      try {
+        const data = await api("/api/classify", {
+          method: "POST",
+          body: JSON.stringify({ email_index: state.selectedIndex, retrieval_limit: 5 })
+        });
+        const idx = state.emails.findIndex((email) => email.index === state.selectedIndex);
+        if (idx >= 0) state.emails[idx].classification = data.classification || {};
+        renderInbox();
+      } catch (error) {
+        $("analysisDetail").insertAdjacentHTML("afterbegin", `<div class="notice" style="color:var(--danger)">${escapeHtml(error.message)}</div>`);
+      } finally {
+        setBusy(button, false);
+      }
+    }
+
+    function renderAnalytics() {
+      const s = state.summary || {};
+      $("analyticsStats").innerHTML = [
+        ["Classified", s.classified_count || 0, "account_tree"],
+        ["Routed", s.routed_count || 0, "route"],
+        ["Qdrant Emails", s.qdrant_points?.emails ?? "-", "database"],
+        ["Qdrant Attachments", s.qdrant_points?.attachments ?? "-", "attach_file"]
+      ].map(([label, value, icon]) => `<div class="stat"><span class="label">${label}</span><div style="display:flex;align-items:center;justify-content:space-between"><div class="stat-value">${value}</div><span class="material-symbols-outlined" style="color:var(--secondary)">${icon}</span></div></div>`).join("");
+      const entries = Object.entries(s.attachment_categories || {});
+      $("attachmentStats").innerHTML = entries.length ? entries.map(([key, count]) => `<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line)"><strong>${escapeHtml(key)}</strong><span>${count}</span></div>`).join("") : `<div class="empty">첨부 분류 리포트가 아직 없습니다.</div>`;
+    }
+
+    function renderSettings() {
+      const h = state.health || {};
+      const s = state.summary || {};
+      $("settingsCards").innerHTML = [
+        ["LLM Connection", h.llm_model || "-", "Ollama (Local)", h.ok ? "Active" : "Error", "memory"],
+        ["Vector Database", `${s.qdrant_points?.emails ?? "-"} / ${s.qdrant_points?.attachments ?? "-"}`, h.qdrant_path || "-", "Indexed", "database"],
+        ["Duplicate Prevention", "0.85", "Semantic similarity threshold", "Enabled", "copy_all"]
+      ].map(([title, value, desc, status, icon]) => `<div class="stat"><div style="display:flex;justify-content:space-between;gap:12px"><span class="material-symbols-outlined" style="color:var(--secondary)">${icon}</span><span class="chip blue">${status}</span></div><h3 style="margin-top:16px">${title}</h3><div class="stat-value" style="font-size:20px;line-height:28px">${escapeHtml(value)}</div><p class="subtle">${escapeHtml(desc)}</p></div>`).join("");
+      const rules = [
+        ["01", "Category", "quote / rfq / order", "Route To", "발주·견적 담당자"],
+        ["02", "Category", "technical", "Route To", "기술 담당자"],
+        ["03", "Category", "payment", "Route To", "회계 담당자"],
+        ["04", "Attachment", "structured document", "Action", "자동 견적 폼 후보"]
+      ];
+      $("ruleRows").innerHTML = rules.map(([no, type, condition, action, target]) => `<div class="rule-row"><span class="mono">${no}</span><span><span class="chip">${type}</span> <strong>${condition}</strong></span><span class="material-symbols-outlined">arrow_forward</span><span><span class="chip">${action}</span> ${target}</span><button class="icon-btn"><span class="material-symbols-outlined">edit</span></button></div>`).join("");
+    }
+
+    async function launchJob(path, payload, button) {
+      setBusy(button, true, `<span class="material-symbols-outlined">hourglass_top</span>Queued`);
+      try {
+        const data = await api(path, { method: "POST", body: JSON.stringify(payload || {}) });
+        alert(`작업이 시작되었습니다.\nPID: ${data.pid}\nLog: ${data.log_path}`);
+      } catch (error) {
+        alert(error.message);
+      } finally {
+        setBusy(button, false);
+      }
+    }
+
+    document.querySelectorAll(".nav button").forEach((button) => button.addEventListener("click", () => showView(button.dataset.view)));
+    $("refreshBtn").addEventListener("click", loadData);
+    $("searchBtn").addEventListener("click", runSearch);
+    $("searchInput").addEventListener("keydown", (event) => { if (event.key === "Enter") runSearch(); });
+    $("emailSelect").addEventListener("change", (event) => { state.selectedIndex = Number(event.target.value); renderInbox(); });
+    $("classifySelectedBtn").addEventListener("click", classifySelected);
+    $("triageBtn").addEventListener("click", () => showView("inbox"));
+    $("confirmRoutingBtn").addEventListener("click", () => alert("라우팅 확인 상태가 UI에 반영되었습니다. 실제 Gmail 전달 API는 별도 승인 후 연결하세요."));
+    $("fetchBtn").addEventListener("click", () => launchJob("/api/fetch", { search_keyword: "quote order purchase", max_emails: 100 }, $("fetchBtn")));
+    $("reindexBtn").addEventListener("click", () => launchJob("/api/reindex", {}, $("reindexBtn")));
+
+    loadData().catch((error) => {
+      $("stats").innerHTML = `<div class="notice" style="grid-column:1/-1;color:var(--danger)">${escapeHtml(error.message)}</div>`;
+    });
+  </script>
+</body>
+</html>

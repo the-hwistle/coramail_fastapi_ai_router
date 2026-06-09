@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ForgeMail AI - Logistics Intelligence</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-fixed-dim": "#b7c7e4",
+                    "on-tertiary-container": "#a98d63",
+                    "inverse-primary": "#b7c7e4",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary-fixed-dim": "#adc6ff",
+                    "on-surface": "#1b1b1d",
+                    "on-primary-fixed-variant": "#38485f",
+                    "surface-container-highest": "#e4e2e4",
+                    "background": "#fbf9fb",
+                    "on-secondary-fixed": "#001a42",
+                    "inverse-surface": "#303032",
+                    "tertiary-fixed-dim": "#e1c294",
+                    "secondary": "#0058be",
+                    "inverse-on-surface": "#f2f0f2",
+                    "on-secondary-container": "#fefcff",
+                    "on-surface-variant": "#44474d",
+                    "tertiary-container": "#392706",
+                    "secondary-container": "#2170e4",
+                    "surface-container": "#efedef",
+                    "on-secondary-fixed-variant": "#004395",
+                    "surface-tint": "#505f78",
+                    "surface-container-low": "#f5f3f5",
+                    "primary-container": "#1b2b41",
+                    "on-primary-container": "#8292ad",
+                    "outline-variant": "#c4c6cd",
+                    "primary-fixed": "#d4e3ff",
+                    "surface-bright": "#fbf9fb",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary": "#ffffff",
+                    "surface-variant": "#e4e2e4",
+                    "on-tertiary-fixed": "#281900",
+                    "error-container": "#ffdad6",
+                    "tertiary-fixed": "#fedeae",
+                    "on-error": "#ffffff",
+                    "on-primary-fixed": "#0b1c31",
+                    "on-primary": "#ffffff",
+                    "surface": "#fbf9fb",
+                    "on-error-container": "#93000a",
+                    "secondary-fixed": "#d8e2ff",
+                    "on-tertiary-fixed-variant": "#584320",
+                    "tertiary": "#201300",
+                    "surface-container-high": "#eae7ea",
+                    "primary": "#05162b",
+                    "surface-dim": "#dbd9db",
+                    "on-background": "#1b1b1d",
+                    "outline": "#75777d",
+                    "error": "#ba1a1a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "sidebar-width": "280px",
+                    "unit": "4px",
+                    "md": "16px",
+                    "preview-pane-min": "400px",
+                    "container-margin": "24px",
+                    "gutter": "16px",
+                    "xs": "4px",
+                    "xl": "32px",
+                    "lg": "24px",
+                    "sm": "8px"
+            },
+            "fontFamily": {
+                    "headline-md": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "mono-data": ["Inter"],
+                    "title-lg": ["Inter"],
+                    "body-md": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "headline-sm": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "label-md": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "label-sm": ["11px", {"lineHeight": "14px", "fontWeight": "500"}],
+                    "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "mono-data": ["13px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "title-lg": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "body-sm": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                    "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .sidebar-active {
+            font-weight: 700;
+            border-left-width: 4px;
+            border-left-color: #d8e2ff;
+            padding-left: 16px;
+            color: #d8e2ff;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md text-body-md overflow-hidden">
+<!-- Global Navigation Sidebar -->
+<nav class="flex flex-col h-screen fixed left-0 top-0 w-[280px] z-50 bg-primary dark:bg-on-primary-fixed">
+<div class="px-lg py-xl">
+<h1 class="text-title-lg font-title-lg font-black text-surface-bright dark:text-surface-container-lowest">ForgeMail AI</h1>
+<p class="font-label-md text-label-md text-primary-fixed-dim mt-xs uppercase tracking-widest opacity-80">Supply Chain Intelligence</p>
+</div>
+<div class="mt-md flex flex-col gap-1">
+<a class="flex items-center h-12 transition-colors hover:bg-primary-container hover:text-primary-fixed text-secondary-fixed font-bold border-l-4 border-secondary-fixed pl-4" href="#">
+<span class="material-symbols-outlined mr-md">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center h-12 transition-colors hover:bg-primary-container hover:text-primary-fixed text-on-primary-container dark:text-on-primary-fixed-variant pl-5" href="#">
+<span class="material-symbols-outlined mr-md">inbox</span>
+<span class="font-label-md text-label-md">Inbox</span>
+</a>
+<a class="flex items-center h-12 transition-colors hover:bg-primary-container hover:text-primary-fixed text-on-primary-container dark:text-on-primary-fixed-variant pl-5" href="#">
+<span class="material-symbols-outlined mr-md">search</span>
+<span class="font-label-md text-label-md">Search</span>
+</a>
+<a class="flex items-center h-12 transition-colors hover:bg-primary-container hover:text-primary-fixed text-on-primary-container dark:text-on-primary-fixed-variant pl-5" href="#">
+<span class="material-symbols-outlined mr-md">analytics</span>
+<span class="font-label-md text-label-md">Analytics</span>
+</a>
+<a class="flex items-center h-12 transition-colors hover:bg-primary-container hover:text-primary-fixed text-on-primary-container dark:text-on-primary-fixed-variant pl-5" href="#">
+<span class="material-symbols-outlined mr-md">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+</div>
+<div class="mt-auto p-lg border-t border-primary-container">
+<button class="w-full bg-secondary-container text-on-secondary-container py-md px-lg rounded-lg font-label-md text-label-md flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-[20px]">bolt</span>
+                Triage Inbox
+            </button>
+<div class="mt-lg flex items-center gap-md">
+<img alt="Manufacturing Logistics Operator" class="w-8 h-8 rounded-full bg-primary-fixed-dim" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAgWI3RK7-6soCP-4Ut4seRY556HOYsF2ENqTKfBkU-T85YQzYvcoTj_jNt2XXorRJC4G9o7WYZ9MpCbL4nYPfNxNApOl3AeTm54vf4iS6ocHBt_Qps376V3g4ofXUsckZmQwxn7PI3R1ohh17q2WX6NgBsUwbtSpw0s_pJL5Js0BdTxUjtwMTWrq9LMEvhaZVchzB7vAeMbW2vEt8C9Gzc-7LMhD0V7bA5zV66JuR1QAlXR7qgJvhfRUtdAtKsiluTqNf-Ur-494Q"/>
+<div class="overflow-hidden">
+<p class="font-label-md text-label-md text-surface-bright truncate">Operator 042</p>
+<p class="text-[10px] text-primary-fixed-dim uppercase tracking-tighter">Shift: Alpha</p>
+</div>
+</div>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="ml-[280px] h-screen flex flex-col">
+<!-- Top App Bar -->
+<header class="flex justify-between items-center w-full px-lg py-md h-16 sticky top-0 bg-surface dark:bg-surface-dim border-b border-outline-variant dark:border-outline z-40">
+<div class="flex items-center flex-1 max-w-xl">
+<div class="relative w-full focus-within:ring-2 focus-within:ring-secondary rounded-lg">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container border border-outline-variant rounded-lg focus:outline-none text-body-md" placeholder="Search logistics mail..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-md">
+<button class="p-sm rounded-full hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors relative">
+<span class="material-symbols-outlined text-on-surface-variant">notifications</span>
+<span class="absolute top-1 right-1 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="p-sm rounded-full hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant">history</span>
+</button>
+<button class="p-sm rounded-full hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant">help</span>
+</button>
+<div class="h-8 w-[1px] bg-outline-variant mx-xs"></div>
+<img alt="User profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVK4KzV2vR7D_7ATPvPZvIWtlb4u9gvR3Dz5aLY2jLE4JsMK1TmuSj9ouHJ41z2IyRMgeuoH3gxJ7daMle0hYy827MwHKKf4C-kXj57f9hN8VjtXVoP7Xvla4Saz_Yv-gHKCcMsA-U5XZpcY34b0-4af_dJhVzX0EbIyqvni6v0HWuSWkbq3mkS7crpk0YEMdodYxAdAX19w3JqYwrADt_0LFpEfQUcInN5kq3xfvhee1jV-L1e7ngxtmfWmai2XBBzshVLwMT558"/>
+</div>
+</header>
+<!-- Dashboard Content -->
+<div class="flex-1 overflow-y-auto p-lg custom-scrollbar">
+<div class="flex items-end justify-between mb-xl">
+<div>
+<h2 class="font-headline-md text-headline-md text-primary">Mail Classification Dashboard</h2>
+<p class="text-on-surface-variant font-body-md mt-xs">Real-time supply chain communication triage</p>
+</div>
+<div class="flex gap-sm">
+<button class="flex items-center gap-2 bg-surface-container-low border border-outline-variant px-md py-sm rounded-lg font-label-md text-label-md hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-[18px]">calendar_today</span>
+                        Last 24 Hours
+                    </button>
+<button class="flex items-center gap-2 bg-primary text-on-primary px-md py-sm rounded-lg font-label-md text-label-md hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-[18px]">refresh</span>
+                        Sync Gmail
+                    </button>
+</div>
+</div>
+<!-- Top Stats Row -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-lg mb-xl">
+<div class="bg-surface border border-outline-variant p-lg rounded-xl flex flex-col">
+<span class="text-on-surface-variant font-label-md text-label-md uppercase tracking-wider mb-sm">Total Mails Today</span>
+<div class="flex items-center justify-between">
+<span class="font-display-lg text-display-lg text-primary">1,429</span>
+<span class="text-secondary font-bold text-body-sm bg-secondary-fixed px-2 py-1 rounded">+12%</span>
+</div>
+</div>
+<div class="bg-surface border border-outline-variant p-lg rounded-xl flex flex-col">
+<span class="text-on-surface-variant font-label-md text-label-md uppercase tracking-wider mb-sm">AI Auto-Routed</span>
+<div class="flex items-center justify-between">
+<span class="font-display-lg text-display-lg text-primary">88.4%</span>
+<div class="w-12 h-2 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-[88%]"></div>
+</div>
+</div>
+</div>
+<div class="bg-surface border border-outline-variant p-lg rounded-xl flex flex-col">
+<span class="text-on-surface-variant font-label-md text-label-md uppercase tracking-wider mb-sm">Duplicate Blocked</span>
+<div class="flex items-center justify-between">
+<span class="font-display-lg text-display-lg text-primary">342</span>
+<span class="material-symbols-outlined text-outline">verified_user</span>
+</div>
+</div>
+<div class="bg-surface border-2 border-error p-lg rounded-xl flex flex-col bg-error-container/10">
+<span class="text-error font-label-md text-label-md uppercase tracking-wider mb-sm font-bold">Urgent Tasks</span>
+<div class="flex items-center justify-between">
+<span class="font-display-lg text-display-lg text-error">12</span>
+<span class="material-symbols-outlined text-error" style="font-variation-settings: 'FILL' 1;">warning</span>
+</div>
+</div>
+</div>
+<!-- Bento Layout Content -->
+<div class="grid grid-cols-12 gap-lg h-full min-h-[600px]">
+<!-- Main Email Triage Table -->
+<div class="col-span-12 lg:col-span-8 bg-surface border border-outline-variant rounded-xl overflow-hidden flex flex-col">
+<div class="px-lg py-md border-b border-outline-variant flex items-center justify-between bg-surface-container-low">
+<h3 class="font-title-lg text-title-lg text-primary">Recent Mail Streams</h3>
+<div class="flex gap-md">
+<span class="flex items-center gap-2 text-on-surface-variant text-label-md font-label-md">
+<span class="w-2 h-2 rounded-full bg-secondary"></span> Live API
+                            </span>
+</div>
+</div>
+<div class="overflow-x-auto flex-1">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-outline-variant bg-surface-container-lowest">
+<th class="px-md py-3 font-label-md text-label-md text-on-surface-variant uppercase">Status</th>
+<th class="px-md py-3 font-label-md text-label-md text-on-surface-variant uppercase">Sender</th>
+<th class="px-md py-3 font-label-md text-label-md text-on-surface-variant uppercase">Subject</th>
+<th class="px-md py-3 font-label-md text-label-md text-on-surface-variant uppercase">Classification</th>
+<th class="px-md py-3 font-label-md text-label-md text-on-surface-variant uppercase">Receiver</th>
+<th class="px-md py-3 font-label-md text-label-md text-on-surface-variant uppercase">Time</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-md py-4">
+<div class="flex items-center gap-1 text-secondary">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+<span class="font-label-sm text-label-sm">AI OK</span>
+</div>
+</td>
+<td class="px-md py-4 font-mono-data text-mono-data">maersk.logistics@corp.com</td>
+<td class="px-md py-4 text-body-sm font-semibold max-w-[200px] truncate">RE: Container #8812 - Port Delay Notification</td>
+<td class="px-md py-4">
+<span class="bg-tertiary-fixed text-on-tertiary-fixed px-sm py-0.5 rounded font-label-sm text-label-sm">LOGISTICS</span>
+</td>
+<td class="px-md py-4 text-body-sm">David Chen</td>
+<td class="px-md py-4 text-on-surface-variant text-body-sm">08:42 AM</td>
+</tr>
+<!-- Row 2 - Urgent -->
+<tr class="hover:bg-surface-container-low transition-colors border-l-2 border-error">
+<td class="px-md py-4">
+<div class="flex items-center gap-1 text-error">
+<span class="material-symbols-outlined text-[18px]">priority_high</span>
+<span class="font-label-sm text-label-sm">URGENT</span>
+</div>
+</td>
+<td class="px-md py-4 font-mono-data text-mono-data">billing@factory-supply.de</td>
+<td class="px-md py-4 text-body-sm font-semibold">OVERDUE: Invoice INV-9908 - Production Blocked</td>
+<td class="px-md py-4">
+<span class="bg-error-container text-on-error-container px-sm py-0.5 rounded font-label-sm text-label-sm">BILLING</span>
+</td>
+<td class="px-md py-4 text-body-sm">Sarah Miller</td>
+<td class="px-md py-4 text-on-surface-variant text-body-sm">08:35 AM</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-md py-4">
+<div class="flex items-center gap-1 text-on-surface-variant opacity-60">
+<span class="material-symbols-outlined text-[18px]">check_circle</span>
+<span class="font-label-sm text-label-sm">ROUTED</span>
+</div>
+</td>
+<td class="px-md py-4 font-mono-data text-mono-data">support@tech-core.io</td>
+<td class="px-md py-4 text-body-sm font-semibold">New Service Ticket #4410 - API Maintenance</td>
+<td class="px-md py-4">
+<span class="bg-secondary-fixed text-on-secondary-fixed-variant px-sm py-0.5 rounded font-label-sm text-label-sm">TECH</span>
+</td>
+<td class="px-md py-4 text-body-sm">IT Support</td>
+<td class="px-md py-4 text-on-surface-variant text-body-sm">08:21 AM</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-md py-4">
+<div class="flex items-center gap-1 text-secondary">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+<span class="font-label-sm text-label-sm">AI OK</span>
+</div>
+</td>
+<td class="px-md py-4 font-mono-data text-mono-data">orders@global-parts.net</td>
+<td class="px-md py-4 text-body-sm font-semibold">Purchase Order PO-77213 Confirmation</td>
+<td class="px-md py-4">
+<span class="bg-surface-variant text-on-surface-variant px-sm py-0.5 rounded font-label-sm text-label-sm">ORDER</span>
+</td>
+<td class="px-md py-4 text-body-sm">David Chen</td>
+<td class="px-md py-4 text-on-surface-variant text-body-sm">08:15 AM</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-md py-4">
+<div class="flex items-center gap-1 text-secondary">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+<span class="font-label-sm text-label-sm">AI OK</span>
+</div>
+</td>
+<td class="px-md py-4 font-mono-data text-mono-data">inquiry@partner-logistics.com</td>
+<td class="px-md py-4 text-body-sm font-semibold">RFQ for Q4 Shipping Lanes - Southeast Asia</td>
+<td class="px-md py-4">
+<span class="bg-tertiary-fixed text-on-tertiary-fixed px-sm py-0.5 rounded font-label-sm text-label-sm">INQUIRY</span>
+</td>
+<td class="px-md py-4 text-body-sm">Elena Rodriguez</td>
+<td class="px-md py-4 text-on-surface-variant text-body-sm">07:55 AM</td>
+</tr>
+<!-- Row 6 -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-md py-4">
+<div class="flex items-center gap-1 text-on-surface-variant opacity-60">
+<span class="material-symbols-outlined text-[18px]">check_circle</span>
+<span class="font-label-sm text-label-sm">ROUTED</span>
+</div>
+</td>
+<td class="px-md py-4 font-mono-data text-mono-data">facility.manager@warehouse.com</td>
+<td class="px-md py-4 text-body-sm font-semibold">Weekly Stock Report - Region West</td>
+<td class="px-md py-4">
+<span class="bg-tertiary-fixed text-on-tertiary-fixed px-sm py-0.5 rounded font-label-sm text-label-sm">LOGISTICS</span>
+</td>
+<td class="px-md py-4 text-body-sm">Elena Rodriguez</td>
+<td class="px-md py-4 text-on-surface-variant text-body-sm">07:42 AM</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="px-lg py-md border-t border-outline-variant flex justify-between items-center bg-surface-container-lowest">
+<span class="text-body-sm text-on-surface-variant">Showing 6 of 1,429 recent emails</span>
+<div class="flex gap-sm">
+<button class="p-xs hover:bg-surface-container rounded transition-colors"><span class="material-symbols-outlined">chevron_left</span></button>
+<button class="p-xs hover:bg-surface-container rounded transition-colors"><span class="material-symbols-outlined">chevron_right</span></button>
+</div>
+</div>
+</div>
+<!-- Right Pane: Analytics & Details -->
+<div class="col-span-12 lg:col-span-4 flex flex-col gap-lg">
+<!-- Category Distribution Chart Card -->
+<div class="bg-surface border border-outline-variant rounded-xl p-lg flex flex-col">
+<h3 class="font-title-lg text-title-lg text-primary mb-md">Category Distribution</h3>
+<div class="flex items-center justify-center py-xl relative">
+<!-- Visual placeholder for a donut chart using CSS -->
+<div class="w-32 h-32 rounded-full border-[16px] border-surface-container relative flex items-center justify-center">
+<div class="absolute inset-0 rounded-full border-[16px] border-t-secondary border-r-secondary-container border-b-tertiary-fixed border-l-error transform rotate-45"></div>
+<div class="text-center">
+<span class="block font-bold text-title-lg">100%</span>
+<span class="text-[10px] uppercase text-on-surface-variant">Categorized</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-md mt-md">
+<div class="flex items-center gap-sm">
+<div class="w-3 h-3 rounded-full bg-secondary"></div>
+<span class="text-body-sm font-medium">Logistics (42%)</span>
+</div>
+<div class="flex items-center gap-sm">
+<div class="w-3 h-3 rounded-full bg-secondary-container"></div>
+<span class="text-body-sm font-medium">Orders (28%)</span>
+</div>
+<div class="flex items-center gap-sm">
+<div class="w-3 h-3 rounded-full bg-tertiary-fixed"></div>
+<span class="text-body-sm font-medium">Inquiry (15%)</span>
+</div>
+<div class="flex items-center gap-sm">
+<div class="w-3 h-3 rounded-full bg-error"></div>
+<span class="text-body-sm font-medium">Billing (15%)</span>
+</div>
+</div>
+</div>
+<!-- AI Insight Card -->
+<div class="bg-surface border border-outline-variant rounded-xl p-lg border-t-4 border-t-secondary relative overflow-hidden">
+<div class="absolute top-2 right-2 opacity-10">
+<span class="material-symbols-outlined text-[64px]">psychology</span>
+</div>
+<h3 class="font-title-lg text-title-lg text-primary flex items-center gap-2 mb-sm">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">spark</span>
+                            Smart Triage Tip
+                        </h3>
+<p class="text-body-sm text-on-surface-variant leading-relaxed">
+                            AI detected an 18% spike in <span class="font-bold text-secondary">Billing</span> inquiries today compared to the last 7-day average. Suggesting a bulk review of supplier invoices for Department Q4.
+                        </p>
+<button class="mt-md w-full bg-surface-container-high py-sm rounded font-label-md text-label-md text-primary hover:bg-outline-variant transition-colors">
+                            Apply Strategy
+                        </button>
+</div>
+<!-- Visual Accent Card -->
+<div class="bg-primary flex-1 rounded-xl overflow-hidden relative min-h-[160px]">
+<img alt="Logistics center" class="absolute inset-0 w-full h-full object-cover opacity-40 mix-blend-overlay" data-alt="A sprawling, high-tech logistics distribution center seen from an aerial perspective. The vast warehouse floor is filled with neatly organized shelving units and automated sorting machinery. The lighting is cool-toned and industrial, with crisp blue and white reflections on metallic surfaces. The atmosphere is efficient, modern, and highly organized, emphasizing the scale of global supply chain management." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAbreLudCgCvtRCKo-N--uz1uSnyfaoWv_ZjVpn1hdEMCOlpNJtt05MegDreE7tv513ifhJFAYACsgupujVcwoAu4OevMdYfK1xjq9HJOlahiuRaIalTKY7YJzc3d1rgaTy2PZZlE-En5AQrGTbxBi7YmWofmh2I6HMnEs6xOcdCGwXG0AZH7vXSJShnUIHlGLWbNXuwqCSx6TPQDwUt6DpMH0rn4UsTHqHMeSnOfTdy8rOHVh2ZQbzks3asewVmEucPnDgrgnn_5w"/>
+<div class="absolute inset-0 bg-gradient-to-t from-primary to-transparent p-lg flex flex-col justify-end">
+<p class="text-surface-bright font-headline-sm text-headline-sm">Node Capacity: 94%</p>
+<p class="text-primary-fixed-dim text-body-sm">System operating at peak efficiency across all routing lanes.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Micro-interactions Script -->
+<script>
+        // Subtle row highlight on hover already handled by Tailwind group classes
+        // Any specific JS logic for chart animation or data updates would go here
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("ForgeMail AI Dashboard initialized.");
+            
+            // Add a subtle entrance animation to stat cards
+            const cards = document.querySelectorAll('.grid > div');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(10px)';
+                card.style.transition = `all 0.4s ease-out ${index * 0.1}s`;
+                setTimeout(() => {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, 50);
+            });
+        });
+    </script>
+</body></html>

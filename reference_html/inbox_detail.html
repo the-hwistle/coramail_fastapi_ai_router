@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ForgeMail AI - Email Detail &amp; Analysis</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-fixed-dim": "#b7c7e4",
+                    "on-tertiary-container": "#a98d63",
+                    "inverse-primary": "#b7c7e4",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary-fixed-dim": "#adc6ff",
+                    "on-surface": "#1b1b1d",
+                    "on-primary-fixed-variant": "#38485f",
+                    "surface-container-highest": "#e4e2e4",
+                    "background": "#fbf9fb",
+                    "on-secondary-fixed": "#001a42",
+                    "inverse-surface": "#303032",
+                    "tertiary-fixed-dim": "#e1c294",
+                    "secondary": "#0058be",
+                    "inverse-on-surface": "#f2f0f2",
+                    "on-secondary-container": "#fefcff",
+                    "on-surface-variant": "#44474d",
+                    "tertiary-container": "#392706",
+                    "secondary-container": "#2170e4",
+                    "surface-container": "#efedef",
+                    "on-secondary-fixed-variant": "#004395",
+                    "surface-tint": "#505f78",
+                    "surface-container-low": "#f5f3f5",
+                    "primary-container": "#1b2b41",
+                    "on-primary-container": "#8292ad",
+                    "outline-variant": "#c4c6cd",
+                    "primary-fixed": "#d4e3ff",
+                    "surface-bright": "#fbf9fb",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary": "#ffffff",
+                    "surface-variant": "#e4e2e4",
+                    "on-tertiary-fixed": "#281900",
+                    "error-container": "#ffdad6",
+                    "tertiary-fixed": "#fedeae",
+                    "on-error": "#ffffff",
+                    "on-primary-fixed": "#0b1c31",
+                    "on-primary": "#ffffff",
+                    "surface": "#fbf9fb",
+                    "on-error-container": "#93000a",
+                    "secondary-fixed": "#d8e2ff",
+                    "on-tertiary-fixed-variant": "#584320",
+                    "tertiary": "#201300",
+                    "surface-container-high": "#eae7ea",
+                    "primary": "#05162b",
+                    "surface-dim": "#dbd9db",
+                    "on-background": "#1b1b1d",
+                    "outline": "#75777d",
+                    "error": "#ba1a1a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "sidebar-width": "280px",
+                    "unit": "4px",
+                    "md": "16px",
+                    "preview-pane-min": "400px",
+                    "container-margin": "24px",
+                    "gutter": "16px",
+                    "xs": "4px",
+                    "xl": "32px",
+                    "lg": "24px",
+                    "sm": "8px"
+            },
+            "fontFamily": {
+                    "headline-md": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "mono-data": ["Inter"],
+                    "title-lg": ["Inter"],
+                    "body-md": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "headline-sm": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "label-md": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "label-sm": ["11px", {"lineHeight": "14px", "fontWeight": "500"}],
+                    "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "mono-data": ["13px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "title-lg": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "body-sm": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                    "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #fbf9fb; color: #1b1b1d; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .sidebar-active { border-left-width: 4px; border-color: #d8e2ff; padding-left: 1rem; color: #d8e2ff; font-weight: 700; }
+        .sidebar-inactive { padding-left: 1.25rem; color: #8292ad; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .industrial-border { border: 1px solid #e4e2e4; }
+        .ai-accent-border { border-top: 2px solid #6366F1; }
+        .urgent-accent { border-left: 4px solid #F59E0B; }
+    </style>
+</head>
+<body class="flex min-h-screen">
+<!-- Global Navigation: SideNavBar -->
+<aside class="flex flex-col h-screen fixed left-0 top-0 w-[280px] z-50 bg-primary dark:bg-on-primary-fixed">
+<div class="p-lg flex items-center gap-md">
+<span class="text-title-lg font-title-lg font-black text-surface-bright dark:text-surface-container-lowest">ForgeMail AI</span>
+</div>
+<div class="mt-md flex flex-col flex-grow gap-xs">
+<!-- Dashboard (Inactive) -->
+<a class="flex items-center h-12 hover:bg-primary-container hover:text-primary-fixed transition-colors sidebar-inactive" href="#">
+<span class="material-symbols-outlined mr-md" data-icon="dashboard">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<!-- Inbox (Active) -->
+<a class="flex items-center h-12 hover:bg-primary-container hover:text-primary-fixed transition-colors sidebar-active opacity-90 transition-opacity duration-150" href="#">
+<span class="material-symbols-outlined mr-md" data-icon="inbox">inbox</span>
+<span class="font-label-md text-label-md">Inbox</span>
+</a>
+<!-- Search (Inactive) -->
+<a class="flex items-center h-12 hover:bg-primary-container hover:text-primary-fixed transition-colors sidebar-inactive" href="#">
+<span class="material-symbols-outlined mr-md" data-icon="search">search</span>
+<span class="font-label-md text-label-md">Search</span>
+</a>
+<!-- Analytics (Inactive) -->
+<a class="flex items-center h-12 hover:bg-primary-container hover:text-primary-fixed transition-colors sidebar-inactive" href="#">
+<span class="material-symbols-outlined mr-md" data-icon="analytics">analytics</span>
+<span class="font-label-md text-label-md">Analytics</span>
+</a>
+<!-- Settings (Inactive) -->
+<a class="flex items-center h-12 hover:bg-primary-container hover:text-primary-fixed transition-colors sidebar-inactive" href="#">
+<span class="material-symbols-outlined mr-md" data-icon="settings">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+</div>
+<div class="p-lg mt-auto border-t border-primary-container">
+<div class="flex items-center gap-md">
+<img alt="Manufacturing Logistics Operator" class="w-10 h-10 rounded-full" data-alt="A focused portrait of a professional manufacturing logistics manager in a modern industrial setting. The person is wearing a clean, high-tech tactical vest and has a small communication earpiece. Background features blurred out steel shelving and soft blue industrial lighting, creating a high-contrast and authoritative professional mood suitable for a corporate logistics dashboard." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAu98o01c65hwJYHmIDm42eOexCEJmyqi1Di4dLtcHcceUpCozINYjzLSKUOMzeLZovVerSkWcwaPDwyYEfbzV9MFLFB3JGE9q1GbnMMBaCnzA_TcS5PBEgCZ41GTM3bPkhQYGwNhOiB3pIi1vBRFbMHc-BO-zkQ0ONeNA4LhtRGAsEZZf65Ispp0FE22TcM_JUwlRJyY8qe3aw35GLgMUFINqtV9XbhwqTJnROvORG4AlCBGpD4uvZ_wmj_eBT6B69D2ir2lGGO-8"/>
+<div>
+<p class="font-label-md text-label-md text-surface-bright">Alex Rivera</p>
+<p class="text-[10px] text-on-primary-container uppercase tracking-wider">Logistics Ops</p>
+</div>
+</div>
+<button class="mt-md w-full py-sm bg-secondary text-on-secondary font-label-md text-label-md rounded hover:opacity-90 transition-opacity">
+                Triage Inbox
+            </button>
+</div>
+</aside>
+<!-- Main Content Area -->
+<div class="ml-[280px] w-[calc(100%-280px)] flex flex-col h-screen">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center w-full px-lg py-md h-16 sticky top-0 bg-surface border-b border-outline-variant z-40">
+<div class="flex items-center gap-xl">
+<h1 class="font-display-lg text-display-lg text-primary">ForgeMail AI</h1>
+<div class="relative w-96">
+<span class="material-symbols-outlined absolute left-md top-1/2 -translate-y-1/2 text-outline" data-icon="search">search</span>
+<input class="w-full bg-surface-container-low border-none rounded-lg pl-10 pr-md py-sm focus:ring-2 focus:ring-secondary text-body-md" placeholder="Search logistics records..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-lg">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors" data-icon="notifications">notifications</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors" data-icon="history">history</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors" data-icon="help">help</button>
+<div class="h-8 w-[1px] bg-outline-variant"></div>
+<img alt="User profile" class="w-8 h-8 rounded-full border border-outline-variant" data-alt="Close-up profile photo of a manufacturing technician in a cleanroom suit, focusing on precision and professionalism. The lighting is crisp and cool-toned, aligning with a professional supply chain software environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBI_-ye9yoy93F_iMpbT59kcPMDqOEzS_7_Ip0jlzyECkat_p7lTqGPfih8zOBFBs2r8LUZhWUGer-E9GS8u49HYwZ-W40FUyBq8SBbjhnuGhoSh05gDJJHXj5--5PTW2TzUR2ogTzwIEKtonSJz2YZmiEbUtsLf3PNO0PV7YX4Kwimobg7SvxNX-knRZ399bBnNPEcVUesouAxkjf7rhU7SitYkG_GOYZAaLzDQn2rOAWc4_QVbFJyEoKDg9ohNNcn8tECR0wj_oM"/>
+</div>
+</header>
+<!-- Split Screen Content -->
+<main class="flex flex-1 overflow-hidden">
+<!-- Left: Email Detail Pane -->
+<section class="w-1/2 border-r border-outline-variant bg-white overflow-y-auto p-xl flex flex-col gap-lg scrollbar-hide">
+<!-- Metadata Header -->
+<div class="flex flex-col gap-sm border-b border-outline-variant pb-lg">
+<div class="flex justify-between items-start">
+<span class="bg-primary-fixed text-on-primary-fixed px-sm py-xs font-label-md text-[10px] rounded uppercase">Procurement</span>
+<span class="text-body-sm text-outline">Oct 24, 2023 • 09:42 AM</span>
+</div>
+<h2 class="font-headline-md text-headline-md text-primary">RE: Urgent Inquiry - Part #PX-902 Production Delay &amp; Lead Time</h2>
+<div class="flex items-center gap-md mt-sm">
+<div class="w-10 h-10 bg-surface-container-highest flex items-center justify-center rounded-full font-bold text-primary">SV</div>
+<div>
+<p class="font-label-md text-label-md">Sarah Vance <span class="text-outline font-normal">&lt;svance@precision-global.com&gt;</span></p>
+<p class="text-body-sm text-outline">To: Logistics Command Center</p>
+</div>
+</div>
+</div>
+<!-- Email Body -->
+<div class="text-body-lg text-on-surface leading-relaxed urgent-accent pl-lg">
+<p>Hi Alex,</p>
+<p class="mt-md">We’ve hit a snag with the supply chain for the <strong>PX-902 actuators</strong>. Our sub-component supplier in Shenzhen has reported a minor delay due to holiday congestion, which shifts our expected delivery from Oct 30 to Nov 05.</p>
+<p class="mt-md">Attached is the updated quotation for 2,500 units including the adjusted freight cost ($4,200 total). Please confirm if this 2-week lead time adjustment is manageable for the Q4 production cycle at the Ohio facility.</p>
+<p class="mt-md">Best,<br/>Sarah Vance<br/>Lead Logistics Coordinator | Precision Global</p>
+</div>
+<!-- Attached File Preview -->
+<div class="mt-xl">
+<p class="font-label-md text-label-md text-outline uppercase mb-md">1 Attachment</p>
+<div class="flex items-center p-md bg-surface-container-low border border-outline-variant rounded-lg gap-md group hover:bg-surface-container-high transition-colors cursor-pointer">
+<div class="w-12 h-16 bg-white border border-outline-variant flex items-center justify-center rounded overflow-hidden">
+<img alt="PDF Thumbnail" class="object-cover w-full h-full opacity-60" data-alt="A macro shot of a formal business document with clear typography, tables, and a corporate seal. The lighting is bright and even, mimicking a scanner's output. The document appears professional and high-stakes, centered on manufacturing logistics data." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDQzH9Qj9jmhwISD-03AxdiXOAHxtKRMvx4hN6FOja8TDPOLEamb78GHvZchvmSK7Lz24qwEdMvVhg2_9e97xLUbXN36COTFJkTWW1XRrqN5sRSH5B6rNJudErvoOB1-VRbyl6fpsHo69GRGj9YOGsMJVxBtbUaaw1CJDE51hZzpboz_SY1g2iJCMw0_DrcLIBtFfBC0cv5s7xW29htqWuLhti4dReBja4NXl8DJ6Ne7LPjhPMcE29-vEUDLNnR2i6mJS-WPbtWbx0"/>
+</div>
+<div class="flex-grow">
+<p class="font-label-md text-label-md text-primary">QUOTE_PX902_V2.pdf</p>
+<p class="text-[11px] text-outline">1.2 MB • PDF Document</p>
+</div>
+<span class="material-symbols-outlined text-outline group-hover:text-primary" data-icon="download">download</span>
+</div>
+</div>
+</section>
+<!-- Right: AI Analysis Panel -->
+<section class="w-1/2 bg-background overflow-y-auto flex flex-col">
+<!-- Action Bar (Sticky Top) -->
+<div class="sticky top-0 p-lg bg-background/80 backdrop-blur-md z-10 flex gap-md border-b border-outline-variant">
+<button class="flex-1 bg-secondary text-white py-sm rounded font-label-md text-label-md hover:opacity-90 transition-opacity flex items-center justify-center gap-xs">
+<span class="material-symbols-outlined text-[18px]" data-icon="check_circle">check_circle</span>
+                        Confirm Routing
+                    </button>
+<button class="flex-1 bg-primary text-white py-sm rounded font-label-md text-label-md hover:opacity-90 transition-opacity flex items-center justify-center gap-xs">
+<span class="material-symbols-outlined text-[18px]" data-icon="auto_awesome">auto_awesome</span>
+                        Generate Draft
+                    </button>
+<button class="w-12 bg-white border border-outline-variant py-sm rounded flex items-center justify-center text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+<div class="p-xl flex flex-col gap-lg">
+<!-- AI Summary Card -->
+<div class="ai-accent-border bg-white p-lg rounded industrial-border shadow-sm">
+<div class="flex items-center gap-sm mb-md">
+<span class="material-symbols-outlined text-[#6366F1]" data-icon="auto_fix">auto_fix</span>
+<h3 class="font-title-lg text-title-lg text-primary">AI Executive Summary</h3>
+</div>
+<ul class="flex flex-col gap-sm">
+<li class="flex gap-md items-start">
+<span class="w-1.5 h-1.5 rounded-full bg-[#6366F1] mt-[7px] shrink-0"></span>
+<p class="text-body-md text-on-surface">5-day delivery delay reported for PX-902 sub-components from Shenzhen.</p>
+</li>
+<li class="flex gap-md items-start">
+<span class="w-1.5 h-1.5 rounded-full bg-[#6366F1] mt-[7px] shrink-0"></span>
+<p class="text-body-md text-on-surface">Total procurement cost confirmed at $4,200 for 2,500 units.</p>
+</li>
+<li class="flex gap-md items-start">
+<span class="w-1.5 h-1.5 rounded-full bg-[#6366F1] mt-[7px] shrink-0"></span>
+<p class="text-body-md text-on-surface">Urgent confirmation required for Q4 Ohio facility scheduling.</p>
+</li>
+</ul>
+</div>
+<!-- Extracted Data Table -->
+<div class="bg-white rounded industrial-border overflow-hidden">
+<div class="px-lg py-md border-b border-outline-variant bg-surface-container-low flex justify-between items-center">
+<h3 class="font-label-md text-label-md text-outline uppercase">Extracted Entities</h3>
+<span class="text-[10px] text-[#6366F1] font-bold">98.2% CONFIDENCE</span>
+</div>
+<table class="w-full text-left">
+<tbody class="divide-y divide-outline-variant">
+<tr>
+<td class="px-lg py-md text-body-sm font-label-md text-outline w-1/3">Part Number</td>
+<td class="px-lg py-md font-mono-data text-mono-data text-primary">PX-902 (Actuator)</td>
+</tr>
+<tr>
+<td class="px-lg py-md text-body-sm font-label-md text-outline">Lead Time</td>
+<td class="px-lg py-md text-body-md text-primary">14 Days (Revised)</td>
+</tr>
+<tr>
+<td class="px-lg py-md text-body-sm font-label-md text-outline">Total Amount</td>
+<td class="px-lg py-md text-body-md font-bold text-[#059669]">$4,200.00 USD</td>
+</tr>
+<tr>
+<td class="px-lg py-md text-body-sm font-label-md text-outline">Origin Location</td>
+<td class="px-lg py-md text-body-md text-primary">Shenzhen, CN</td>
+</tr>
+<tr>
+<td class="px-lg py-md text-body-sm font-label-md text-outline">Destination</td>
+<td class="px-lg py-md text-body-md text-primary">Ohio Facility (HUB-04)</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Attachment VLM Analysis -->
+<div class="bg-[#EEF2FF] border border-[#C7D2FE] rounded p-lg flex flex-col gap-md">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-[#4338CA] fill" data-icon="visibility" style="font-variation-settings: 'FILL' 1;">visibility</span>
+<span class="font-label-md text-label-md text-[#4338CA] uppercase">VLM Insight (Visual Analysis)</span>
+</div>
+<div class="flex gap-lg items-start">
+<div class="w-24 h-32 bg-white border border-[#C7D2FE] rounded p-1 shrink-0 relative">
+<img alt="VLM Analyzed Doc" class="w-full h-full object-cover grayscale brightness-110" data-alt="A document on a sterile white background with highlighted technical data points in blue translucent overlays. The image evokes a feeling of high-speed machine vision processing, where information is being digitally extracted and organized." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAlvH5B7ppl9jz8XZx1WlCusbg2Hxm2Zuf52aKYi7KCUYPCd5YA5Hrwj2-A8X2pvDmHjt4YAV7BXWna6QnBqQh35NENMHRHo89hiHbaMMdHapn0vjtSljU_wPKnnW9lS5-ZFLAsYCFPdvyDJa3fcNQbpm9t4uPcnh5R8dOPRiRBb0dWyFGCDfGrsUtX4y1TjRYCTdGtq4l_9reNt5CRgvpJx7dDgChS6tvtqbR3vHiQfHl38jqAyrMk4ris0p_KLyymwfEEjsea1Fo"/>
+<div class="absolute inset-0 border-2 border-[#6366F1] opacity-40"></div>
+</div>
+<div class="bg-white/60 p-md rounded border border-white flex-grow">
+<p class="text-body-sm italic text-[#3730A3]">"VLM Insight: Quotation for Part #PX-902 found with 2-week lead time adjustment on page 1. Pricing aligns with Master Service Agreement (MSA) Tier 2 rates."</p>
+</div>
+</div>
+</div>
+<!-- Sentiment & Urgency Meter -->
+<div class="grid grid-cols-2 gap-lg">
+<div class="bg-white p-lg border border-outline-variant rounded">
+<p class="font-label-md text-label-md text-outline uppercase mb-sm">Sentiment</p>
+<div class="flex items-center gap-sm text-primary">
+<span class="material-symbols-outlined" data-icon="info">info</span>
+<span class="font-title-lg text-title-lg">Concerned / Informative</span>
+</div>
+</div>
+<div class="bg-white p-lg border border-outline-variant rounded">
+<p class="font-label-md text-label-md text-outline uppercase mb-sm">Action Urgency</p>
+<div class="flex items-center gap-sm text-error">
+<span class="material-symbols-outlined" data-icon="priority_high">priority_high</span>
+<span class="font-title-lg text-title-lg">High Priority</span>
+</div>
+</div>
+</div>
+<!-- AI Generated Reply Preview -->
+<div class="bg-surface-container p-lg rounded border border-outline-variant mb-xl">
+<div class="flex justify-between items-center mb-md">
+<p class="font-label-md text-label-md text-outline uppercase">AI Generated Response (Draft)</p>
+<button class="text-secondary font-label-md text-label-md flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]" data-icon="edit">edit</span>
+                                Edit Draft
+                            </button>
+</div>
+<div class="bg-white p-md rounded border border-outline-variant text-body-md text-on-surface-variant line-clamp-3">
+                            Subject: Re: PX-902 Delay Confirmation
+                            Thank you for the update, Sarah. We have processed the revised delivery date of Nov 05 for HUB-04. The procurement cost of $4,200 is approved...
+                        </div>
+</div>
+</div>
+</section>
+</main>
+</div>
+<!-- Interaction Script -->
+<script>
+        // Simple micro-interaction for hover states and button feedback
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('mousedown', () => {
+                button.style.transform = 'scale(0.98)';
+            });
+            button.addEventListener('mouseup', () => {
+                button.style.transform = 'scale(1)';
+            });
+        });
+        
+        // Dynamic Date Injection
+        const dateSpan = document.querySelector('.text-outline');
+        if (dateSpan && dateSpan.innerText.includes('Oct 24')) {
+            const now = new Date();
+            const options = { month: 'short', day: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' };
+            // Optional: Uncomment to make date real-time
+            // dateSpan.innerText = now.toLocaleDateString('en-US', options);
+        }
+    </script>
+</body></html>
