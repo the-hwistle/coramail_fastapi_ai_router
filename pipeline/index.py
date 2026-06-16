@@ -1,5 +1,7 @@
+import argparse
 import hashlib
 import mimetypes
+import os
 import re
 import time
 from datetime import datetime, timezone
@@ -12,7 +14,7 @@ from llama_index.core.base.llms.types import ChatMessage, ImageBlock, TextBlock
 from llama_index.embeddings.ollama import OllamaEmbedding
 
 from llama_index.multi_modal_llms.ollama import OllamaMultiModal
-from gmail_sqlite_fetcher import SQLiteEmailStore
+from gmail_postgres_fetcher import PostgresEmailStore, database_url_from_env
 
 try:
     import fitz
@@ -33,7 +35,7 @@ except ImportError as exc:
 # ==========================================
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
-EMAIL_DB_PATH = BASE_DIR / "emails.db"
+EMAIL_DATABASE_URL = database_url_from_env()
 QDRANT_PATH = BASE_DIR / "qdrant_storage"
 
 
@@ -43,6 +45,7 @@ ATTACHMENT_COLLECTION = "coramail_attachments"
 LLM_MODEL = "qwen3.5:2b"
 EMBEDDING_MODEL = "nomic-embed-text"
 VISION_MODEL = "moondream"  # 모델 사이즈 키울 시, RAM 부족 문제 발생
+OLLAMA_BASE_URL = os.getenv("OLLAMA_HOST", "http://localhost:11434").rstrip("/")
 VECTOR_SIZE = 768
 MAX_EMBEDDING_CHARS = 6000
 
@@ -317,19 +320,25 @@ def stable_email_id(email: dict[str, Any]) -> str:
     )
 
 
-def load_emails_from_sqlite(db_path: Path = EMAIL_DB_PATH) -> list[dict[str, Any]]:
-    if not db_path.exists():
-        raise FileNotFoundError(f"메일 SQLite DB를 찾을 수 없습니다: {db_path}")
-
-    store = SQLiteEmailStore(db_path)
+def load_emails_from_postgres(database_url: str | None = None) -> list[dict[str, Any]]:
+    store = PostgresEmailStore(database_url or EMAIL_DATABASE_URL)
     try:
         emails = store.load_emails()
     finally:
         store.close()
 
     if not emails:
-        raise RuntimeError(f"SQLite DB에 저장된 이메일이 없습니다: {db_path}")
+        raise RuntimeError("PostgreSQL emails 테이블에 저장된 이메일이 없습니다.")
     return emails
+
+
+def load_emails_from_sqlite(db_path: Path | None = None) -> list[dict[str, Any]]:
+    del db_path
+    return load_emails_from_postgres()
+
+
+def email_uid_of(email: dict[str, Any]) -> str:
+    return stable_email_id(email)
 
 
 def ensure_collection(client: QdrantClient, collection_name: str) -> None:
@@ -348,6 +357,17 @@ def recreate_collection(client: QdrantClient, collection_name: str) -> None:
         collection_name=collection_name,
         vectors_config=VectorParams(size=VECTOR_SIZE, distance=Distance.COSINE),
     )
+
+
+def select_emails_for_indexing(
+    emails: list[dict[str, Any]],
+    *,
+    email_uids: list[str] | None = None,
+) -> list[dict[str, Any]]:
+    if not email_uids:
+        return emails
+    wanted = {str(uid) for uid in email_uids if str(uid).strip()}
+    return [email for email in emails if email_uid_of(email) in wanted]
 
 
 def image_caption_exists(client: QdrantClient, stored_name: str) -> str | None:
@@ -601,32 +621,62 @@ def upsert_in_batches(client: QdrantClient, collection_name: str, points: list[P
         client.upsert(collection_name=collection_name, points=batch)
 
 
-def main() -> None:
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Index coramail emails and attachments into Qdrant.")
+    parser.add_argument("--incremental", action="store_true")
+    parser.add_argument("--email-uid", action="append", dest="email_uids")
+    return parser.parse_args(argv)
+
+
+def main(argv: list[str] | None = None) -> None:
+    args = parse_args(argv)
     print("[1/4] 임베딩, 비전 모델, Qdrant 초기화 중...")
-    embed_model = OllamaEmbedding(model_name=EMBEDDING_MODEL)
+    embed_model = OllamaEmbedding(model_name=EMBEDDING_MODEL, base_url=OLLAMA_BASE_URL)
     Settings.embed_model = embed_model
     vision_llm = OllamaMultiModal(
         model=VISION_MODEL,
+        base_url=OLLAMA_BASE_URL,
         request_timeout=1000.0,
         additional_kwargs={"keep_alive": 0},
     )
 
     client = QdrantClient(path=str(QDRANT_PATH))
-    recreate_collection(client, EMAIL_COLLECTION)
-    recreate_collection(client, ATTACHMENT_COLLECTION)
+    if args.incremental:
+        ensure_collection(client, EMAIL_COLLECTION)
+        ensure_collection(client, ATTACHMENT_COLLECTION)
+    else:
+        recreate_collection(client, EMAIL_COLLECTION)
+        recreate_collection(client, ATTACHMENT_COLLECTION)
 
-    print("[2/4] SQLite DB 로드 및 스키마 변환 중...")
-    emails = load_emails_from_sqlite()
+    print("[2/4] PostgreSQL 이메일 로드 및 스키마 변환 중...")
+    emails = load_emails_from_postgres()
+    selected_emails = select_emails_for_indexing(emails, email_uids=args.email_uids)
+    if not selected_emails:
+        print("인덱싱 대상 이메일이 없습니다.")
+        return
     email_points: list[PointStruct] = []
     attachment_points: list[PointStruct] = []
 
     print("[3/4] 메일/첨부파일 임베딩 및 Qdrant 포인트 생성 중...")
-    for email_index, email in enumerate(emails):
+    indexed_email_uids = {email_uid_of(email) for email in selected_emails}
+    email_index_map = {email_uid_of(email): index for index, email in enumerate(emails)}
+    for email in selected_emails:
+        email_index = email_index_map[email_uid_of(email)]
         email_point = build_email_point(email, email_index, embed_model)
         email_points.append(email_point)
 
-    attachment_contexts = build_attachment_contexts(emails)
-    for local_path in sorted(path for path in DATA_DIR.iterdir() if path.is_file()):
+    attachment_contexts = build_attachment_contexts(selected_emails)
+    if args.incremental:
+        attachment_paths = [
+            DATA_DIR / stored_name
+            for stored_name in sorted(attachment_contexts)
+            if (DATA_DIR / stored_name).is_file()
+        ]
+    else:
+        attachment_paths = sorted(path for path in DATA_DIR.iterdir() if path.is_file())
+    for local_path in attachment_paths:
+        if args.incremental and (attachment_contexts.get(local_path.name, {}).get("parent_email_uid") not in indexed_email_uids):
+            continue
         attachment_points.extend(
             build_data_attachment_points(
                 local_path=local_path,
@@ -643,6 +693,7 @@ def main() -> None:
 
     print("=============================================")
     print(f"Qdrant 저장 위치: {QDRANT_PATH}")
+    print(f"인덱싱 모드: {'incremental' if args.incremental else 'full'}")
     print(f"메일 컬렉션: {EMAIL_COLLECTION} / {len(email_points)} points")
     print(f"첨부 컬렉션: {ATTACHMENT_COLLECTION} / {len(attachment_points)} points")
     print("=============================================")

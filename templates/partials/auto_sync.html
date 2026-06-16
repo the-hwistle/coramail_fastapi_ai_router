@@ -1,0 +1,23 @@
+{% set enabled = sync.enabled %}
+{% set running = sync.running %}
+{% set title = "Auto Sync Off" if not enabled else ("Syncing Gmail" if running else ("Auto Sync Live" if sync.last_exit_code == 0 else "Auto Sync Ready")) %}
+{% set icon = "sync_disabled" if not enabled else ("sync" if running else "task_alt") %}
+{% set detail = (("PID " ~ sync.current_pid ~ " · " ~ sync.last_started_at) if sync.current_pid else ("Starting · " ~ sync.last_started_at if sync.last_started_at else "Starting")) if running else (sync.last_error or ("Last checked " ~ sync.last_completed_at if sync.last_completed_at else "Every " ~ sync.interval_seconds ~ "s")) %}
+<div class="sync-status">
+  <div class="sync-topline">
+    <strong><span class="material-symbols-outlined">{{ icon }}</span>{{ title }}</strong>
+    <button
+      class="icon-btn sync-trigger"
+      hx-post="/ui/auto-sync/run"
+      hx-target="#auto-sync"
+      hx-swap="innerHTML"
+      title="Run manual sync"
+    >
+      <span class="material-symbols-outlined">sync</span>
+    </button>
+  </div>
+  <span>{{ detail }}</span>
+  {% if sync.last_log_path %}
+    <small>{{ sync.last_log_path }}</small>
+  {% endif %}
+</div>

@@ -1,0 +1,7 @@
+{% macro category_chip(label) -%}
+  <span class="chip {{ category_class(label) }}">{{ label }}</span>
+{%- endmacro %}
+
+{% macro empty_state(text) -%}
+  <div class="empty">{{ text }}</div>
+{%- endmacro %}

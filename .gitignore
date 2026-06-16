@@ -1,16 +1,13 @@
 .venv/
+.env
+.env.*
+!.env.example
 __pycache__/
 *.py[cod]
 
 # Runtime logs and job outputs
 runs/
 *.log
-
-# Local credentials and Gmail auth tokens
-credentials.json
-token.json
-pipeline/credentials.json
-pipeline/token.json
 
 # Local mail/vector data snapshots
 *.db
@@ -29,3 +26,7 @@ pipeline/data/
 .DS_Store
 .idea/
 .vscode/
+
+# Google OAuth / API secrets
+pipeline/token.json
+pipeline/credentials.json

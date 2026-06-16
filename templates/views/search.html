@@ -1,0 +1,29 @@
+<section class="view" data-view="search">
+  <div class="section-head">
+    <div>
+      <h1>Search Knowledge</h1>
+      <p class="subtle">Qdrant hybrid search</p>
+    </div>
+  </div>
+
+  <form
+    class="search-box"
+    hx-get="/ui/search-results"
+    hx-target="#search-results"
+    hx-swap="innerHTML"
+  >
+    <input class="input" name="q" value="FM250016318 견적서의 납기와 총액을 찾아줘">
+    <select class="input compact" name="limit">
+      <option value="5">5</option>
+      <option value="10">10</option>
+      <option value="20">20</option>
+    </select>
+    <button class="btn secondary" type="submit">
+      <span class="material-symbols-outlined">neurology</span>Search
+    </button>
+  </form>
+
+  <div id="search-results">
+    {% include "partials/search_results.html" %}
+  </div>
+</section>

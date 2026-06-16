@@ -1,0 +1,227 @@
+{% from "macros.html" import category_chip with context %}
+{% set counts = summary.business_labels or summary.mail_categories or {} %}
+{% set total = counts.values() | sum %}
+
+{% set palette = ['#7F77DD','#1D9E75','#D85A30','#378ADD','#D4537E','#BA7517','#E24B4A','#639922'] %}
+{% set palette_bg = ['#EEEDFE','#E1F5EE','#FAECE7','#E6F1FB','#FBEAF0','#FAEEDA','#FCEBEB','#EAF3DE'] %}
+
+<div class="chart-section">
+
+  <div class="chip-legend" id="categoryFilter">
+    <button
+      type="button"
+      class="chip category-filter-chip is-active"
+      data-category-filter="__all__"
+      data-chip-bg="#F3F4F6"
+      data-chip-color="#6B7280"
+      data-chip-border="#6B728040"
+      data-chip-dot="#6B7280"
+      style="background: #F3F4F6; color: #6B7280; border: 0.5px solid #6B728040;"
+    >
+      <span class="chip-dot" style="background: #6B7280;"></span>
+      전체
+    </button>
+
+    {% for category in category_order %}
+      {% set i = loop.index0 % palette | length %}
+      <button
+        type="button"
+        class="chip category-filter-chip"
+        data-category-filter="{{ category }}"
+        data-chip-bg="{{ palette_bg[i] }}"
+        data-chip-color="{{ palette[i] }}"
+        data-chip-border="{{ palette[i] }}40"
+        data-chip-dot="{{ palette[i] }}"
+        style="background: {{ palette_bg[i] }}; color: {{ palette[i] }}; border: 0.5px solid {{ palette[i] }}40;"
+      >
+        <span class="chip-dot" style="background: {{ palette[i] }};"></span>
+        {{ category }}
+      </button>
+    {% endfor %}
+  </div>
+
+  <div class="chart-layout">
+    <div class="donut-wrap">
+      <canvas id="categoryDonut" role="img"
+        aria-label="카테고리별 분포 도넛 차트. 총 {{ total }}건.">
+        {% for category in category_order %}{{ category }}: {{ counts.get(category, 0) }}{% if not loop.last %}, {% endif %}{% endfor %}
+      </canvas>
+      <div class="donut-center" id="donutCenter">
+        <strong>{{ total }}</strong>
+        <span>전체</span>
+      </div>
+    </div>
+
+    <div class="stat-list">
+      {% for category in category_order %}
+        {% set count = counts.get(category, 0) %}
+        {% set pct = ((count / total * 100) | round | int) if total else 0 %}
+        {% set i = loop.index0 % palette | length %}
+        <div class="stat-row">
+          <div class="stat-label">
+            <span class="stat-dot" style="background: {{ palette[i] }};"></span>
+            <span>{{ category }}</span>
+          </div>
+          <div class="stat-value">
+            <strong>{{ count }}</strong>
+            <span>{{ pct }}%</span>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const categories = {{ category_order | tojson }};
+  const counts = {{ counts | tojson }};
+  const palette = {{ palette | tojson }};
+  const total = {{ total | tojson }};
+
+  const canvas = document.getElementById('categoryDonut');
+  const center = document.getElementById('donutCenter');
+
+  if (!canvas) return;
+
+  if (typeof Chart === 'undefined') {
+    console.error('Chart.js가 로드되지 않았습니다.');
+    return;
+  }
+
+  const data = categories.map(c => Number(counts[c] || 0));
+
+  new Chart(canvas, {
+    type: 'doughnut',
+    data: {
+      labels: categories,
+      datasets: [{
+        data: data,
+        backgroundColor: palette.slice(0, categories.length),
+        borderColor: '#ffffff',
+        borderWidth: 3,
+        hoverOffset: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '68%',
+      plugins: {
+        legend: {
+          display: false
+        },
+        tooltip: {
+          callbacks: {
+            label: function (ctx) {
+              const value = ctx.parsed || 0;
+              const pct = total ? Math.round(value / total * 100) : 0;
+              return ` ${ctx.label}: ${value}건 (${pct}%)`;
+            }
+          }
+        }
+      },
+      onHover: function (evt, elements) {
+        if (!center) return;
+
+        const strong = center.querySelector('strong');
+        const span = center.querySelector('span');
+
+        if (elements.length > 0) {
+          const i = elements[0].index;
+          strong.textContent = data[i];
+          span.textContent = categories[i];
+        } else {
+          strong.textContent = total;
+          span.textContent = '전체';
+        }
+      }
+    }
+  });
+});
+</script>
+
+<script>
+(function () {
+  const ALL = '__all__';
+
+  window.categoryFilterState = window.categoryFilterState || {
+    activeCategory: ALL
+  };
+
+  function applyCategoryFilter(category) {
+    const activeCategory = category || ALL;
+    window.categoryFilterState.activeCategory = activeCategory;
+
+    const currentCategoryLabel = document.getElementById('currentCategoryLabel');
+
+    if (currentCategoryLabel) {
+      currentCategoryLabel.textContent =
+        activeCategory === ALL ? '전체' : activeCategory;
+    }
+
+    const rows = document.querySelectorAll('tr[data-business-label]');
+    let visibleCount = 0;
+
+    rows.forEach(function (row) {
+      const rowCategory = (row.dataset.businessLabel || '').trim();
+
+      const shouldShow =
+        activeCategory === ALL ||
+        rowCategory === activeCategory;
+
+      row.classList.toggle('email-row-hidden', !shouldShow);
+
+      if (shouldShow) {
+        visibleCount += 1;
+      }
+    });
+
+    document.querySelectorAll('[data-category-filter]').forEach(function (chip) {
+      const chipCategory = chip.dataset.categoryFilter || ALL;
+      chip.classList.toggle('is-active', chipCategory === activeCategory);
+    });
+
+    const emptyRow = document.getElementById('categoryFilterEmptyRow');
+    if (emptyRow) {
+      emptyRow.hidden = visibleCount > 0;
+    }
+  }
+
+  window.applyCategoryFilter = applyCategoryFilter;
+
+  if (window.__categoryFilterBound) {
+    applyCategoryFilter(window.categoryFilterState.activeCategory);
+    return;
+  }
+
+  window.__categoryFilterBound = true;
+
+  document.addEventListener('click', function (event) {
+    const chip = event.target.closest('[data-category-filter]');
+    if (!chip) return;
+
+    event.preventDefault();
+
+    const clickedCategory = chip.dataset.categoryFilter || ALL;
+    const currentCategory = window.categoryFilterState.activeCategory;
+
+    const nextCategory =
+      clickedCategory === currentCategory
+        ? ALL
+        : clickedCategory;
+
+    applyCategoryFilter(nextCategory);
+  });
+
+  document.addEventListener('DOMContentLoaded', function () {
+    applyCategoryFilter(window.categoryFilterState.activeCategory);
+  });
+
+  document.body.addEventListener('htmx:afterSwap', function () {
+    applyCategoryFilter(window.categoryFilterState.activeCategory);
+  });
+})();
+</script>

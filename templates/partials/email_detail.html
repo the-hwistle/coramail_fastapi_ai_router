@@ -1,0 +1,189 @@
+{% from "macros.html" import category_chip, empty_state with context %}
+{% if not email %}
+  {{ empty_state("표시할 이메일이 없습니다.") }}
+{% else %}
+  {% set classification = email.classification or {} %}
+  {% set label = email.business_label or business_label(classification) %}
+  {% set state = email.classification_state or "unclassified" %}
+  {% set refs = classification.business_refs or [] %}
+  {% set vessels = classification.vessel_names or [] %}
+  {% set scores = classification.label_scores or {} %}
+  {% set attachments = email.attachments or [] %}
+  {% set related = related_emails or [] %}
+  <article
+    class="detail-card"
+    data-email-index="{{ email.index }}"
+    data-email-uid="{{ email.email_uid }}"
+    hx-get="/ui/emails/{{ email.index }}"
+    hx-target="#email-detail"
+    hx-swap="innerHTML"
+  >
+    <div class="detail-head">
+      <div>
+        <h2>{{ email.subject or "(no subject)" }}</h2>
+        <p class="subtle">{{ email.from or "-" }} · {{ email.date or "-" }}</p>
+      </div>
+      <div class="detail-actions">
+        {{ category_chip(label) }}
+        <span class="row-status {{ state }}">
+          <span class="material-symbols-outlined">
+            {% if state == "completed" %}auto_awesome{% elif state == "running" %}progress_activity{% elif state == "queued" %}schedule{% elif state == "failed" %}error{% else %}pending{% endif %}
+          </span>
+          {{ email.classification_state_label or state }}
+        </span>
+      </div>
+    </div>
+
+    <div class="detail-layout">
+      <section class="panel message-panel">
+        <div class="panel-head">
+          <h3>Message</h3>
+          <span class="label">{{ email.attachment_count or attachments | length }} attachment(s)</span>
+        </div>
+        <div class="panel-body message-panel-body">
+          <div class="attachment-list">
+            {% for file in attachments %}
+              <div class="attachment">
+                <a class="attachment-link" href="{{ file.view_url }}" target="_blank" rel="noopener">
+                  <span class="material-symbols-outlined">
+                    {% if file.preview_kind == "image" %}image{% elif file.preview_kind == "pdf" %}picture_as_pdf{% else %}description{% endif %}
+                  </span>
+                  <div>
+                    <strong>{{ file.filename or "attachment" }}</strong>
+                    <small>
+                      {{ file.content_type or file.mime_type or "" }}
+                      {% if file.size_label %} · {{ file.size_label }}{% endif %}
+                    </small>
+                  </div>
+                </a>
+                <div class="attachment-actions">
+                  {% if file.exists %}
+                    <a class="chip blue" href="{{ file.view_url }}" target="_blank" rel="noopener">View</a>
+                    <a class="chip" href="{{ file.download_url }}">Download</a>
+                  {% else %}
+                    <span class="chip red">Missing</span>
+                  {% endif %}
+                </div>
+              </div>
+            {% else %}
+              <div class="empty small">첨부파일이 없습니다.</div>
+            {% endfor %}
+          </div>
+          <div class="email-body">{{ email.body or email.body_preview or "본문 없음" }}</div>
+        </div>
+      </section>
+
+      <section class="analysis-stack">
+        <div class="panel">
+          <div class="panel-head">
+            <h3>AI Executive Summary</h3>
+            <span class="chip blue">
+              {% if state == "completed" %}
+                {{ (((classification.label_confidence or classification.confidence or 0) * 100) | round | int) }}% confidence
+              {% else %}
+                {{ email.classification_state_label or state }}
+              {% endif %}
+            </span>
+          </div>
+          <div class="panel-body">
+            {% if classification.executive_summary or classification.summary or email.summary %}
+              <div class="executive-summary-list">
+                {% for section in email.executive_summary_sections or [] %}
+                  <section class="executive-summary-item">
+                    <span class="executive-summary-title">{{ section.title }}</span>
+                    <p>{{ section.body }}</p>
+                  </section>
+                {% endfor %}
+              </div>
+            {% elif state in ["queued", "running"] %}
+              <p>AI executive summary 생성 중입니다. 완료되면 이 영역이 자동으로 갱신됩니다.</p>
+            {% elif state == "failed" %}
+              <p>요약 생성에 실패했습니다. 다음 새로고침 주기에서 재시도하거나 API 상태를 확인하세요.</p>
+            {% else %}
+              <p>아직 분류되지 않았습니다. 백그라운드 작업이 곧 시작됩니다.</p>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h3>{{ label }} Details</h3>
+            {{ category_chip(label) }}
+          </div>
+          <table class="info-table">
+            <tbody>
+              <tr><td>Ref No.</td><td>{{ refs | join(", ") if refs else "-" }}</td></tr>
+              <tr><td>Vessel</td><td>{{ vessels | join(", ") if vessels else "-" }}</td></tr>
+              <tr><td>Assigned To</td><td>{{ route_label(classification.routing_labels or []) }}</td></tr>
+              <tr><td>Structured Docs</td><td>{{ "Yes" if classification.has_structured_document else "No" }}</td></tr>
+              <tr>
+                <td>Hybrid Scores</td>
+                <td>
+                  {% for key, value in scores.items() %}
+                    <span class="score-pill">{{ key }} {{ "%.2f"|format(value) }}</span>
+                  {% else %}
+                    -
+                  {% endfor %}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          {% if state in ["queued", "running", "failed", "unclassified"] %}
+            <div class="panel-body panel-note">
+              {% if state in ["queued", "running"] %}
+                분류와 라우팅 정보는 백그라운드 LLM 작업 완료 후 자동 반영됩니다.
+              {% elif state == "failed" %}
+                최근 분류 작업이 실패했습니다. 다음 polling 주기에서 재큐잉될 수 있습니다.
+              {% else %}
+                아직 분류 결과가 없습니다.
+              {% endif %}
+            </div>
+          {% endif %}
+        </div>
+      </section>
+    </div>
+
+    <section class="panel related-mails-panel">
+      <div class="panel-head">
+        <h3>Related Emails by Ref No.</h3>
+        <span class="label">{{ related | length }} match(es)</span>
+      </div>
+      <div class="panel-body">
+        {% if refs and related %}
+          <div class="related-mail-list">
+            {% for item in related %}
+              {% set item_classification = item.classification or {} %}
+              {% set item_label = item.business_label or business_label(item_classification) %}
+              <button
+                type="button"
+                class="related-mail-card"
+                hx-get="/ui/emails/{{ item.index }}"
+                hx-target="#email-detail"
+                hx-swap="innerHTML"
+                hx-on:click="if (document.getElementById('selectedEmailIndex')) document.getElementById('selectedEmailIndex').value='{{ item.index }}'; if (document.getElementById('selectedEmailUid')) document.getElementById('selectedEmailUid').value='{{ item.email_uid }}';"
+              >
+                <div class="related-mail-head">
+                  <strong>{{ item.subject or "(no subject)" }}</strong>
+                  {{ category_chip(item_label) }}
+                </div>
+                <div class="related-mail-meta">
+                  <span>{{ item.from or "-" }}</span>
+                  <span>{{ format_mail_datetime(item.date or item.received_at or item.created_at) }}</span>
+                </div>
+                <div class="related-mail-refs">
+                  {% for ref in item.matched_refs or [] %}
+                    <span class="score-pill">Ref {{ ref }}</span>
+                  {% endfor %}
+                </div>
+              </button>
+            {% endfor %}
+          </div>
+        {% elif refs %}
+          <p class="subtle">같은 Ref No.를 공유하는 다른 이메일이 아직 없습니다.</p>
+        {% else %}
+          <p class="subtle">이 메일에서 추출된 Ref No.가 없어 관련 이메일을 연결할 수 없습니다.</p>
+        {% endif %}
+      </div>
+    </section>
+  </article>
+{% endif %}

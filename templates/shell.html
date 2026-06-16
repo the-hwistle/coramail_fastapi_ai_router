@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CoRA Mail AI Router</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', path='app.css') }}?v={{ asset_version }}">
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">CoRA Mail AI</div>
+      <nav class="nav" aria-label="Main navigation">
+        <button class="active" hx-get="/ui/dashboard" hx-target="#main-panel" hx-swap="innerHTML">
+          <span class="material-symbols-outlined">dashboard</span>Dashboard
+        </button>
+        <button hx-get="/ui/inbox" hx-target="#main-panel" hx-swap="innerHTML">
+          <span class="material-symbols-outlined">inbox</span>Inbox
+        </button>
+        <button hx-get="/ui/search" hx-target="#main-panel" hx-swap="innerHTML">
+          <span class="material-symbols-outlined">search</span>Search
+        </button>
+        <button hx-get="/ui/settings" hx-target="#main-panel" hx-swap="innerHTML">
+          <span class="material-symbols-outlined">settings</span>Settings
+        </button>
+      </nav>
+    </aside>
+
+    <section class="main">
+      <header class="topbar">
+        <div class="title">Mail Routing Dashboard</div>
+        <div class="top-actions">
+          <button class="icon-btn" hx-get="/ui/dashboard" hx-target="#main-panel" hx-swap="innerHTML" title="Refresh">
+            <span class="material-symbols-outlined">refresh</span>
+          </button>
+          <a class="icon-btn" href="/docs" title="API Docs"><span class="material-symbols-outlined">api</span></a>
+          <div class="avatar">AI</div>
+        </div>
+      </header>
+      <main class="content" id="main-panel">
+        {% include "views/dashboard.html" %}
+      </main>
+    </section>
+  </div>
+
+  <script>
+    const uiSyncState = {
+      timer: null,
+      view: "",
+      versions: {},
+      assetVersion: "{{ asset_version }}",
+    };
+
+    function limitInboxRows() {
+      const wrap = document.querySelector(".inbox-table-wrap");
+      if (!wrap) return;
+
+      const headerRow = wrap.querySelector("thead tr");
+      const bodyRow = wrap.querySelector("tbody tr.clickable-row");
+      if (!headerRow || !bodyRow) return;
+
+      const headerHeight = Math.ceil(headerRow.getBoundingClientRect().height);
+      const rowHeight = Math.ceil(bodyRow.getBoundingClientRect().height);
+      wrap.style.height = `${headerHeight + rowHeight * 3 + 2}px`;
+    }
+
+    function syncInboxSelection() {
+      const selectedInput = document.getElementById("selectedEmailIndex");
+      const selectedUidInput = document.getElementById("selectedEmailUid");
+      const detailCard = document.querySelector("#email-detail .detail-card[data-email-index][data-email-uid]");
+      if (!selectedInput || !selectedUidInput || !detailCard) return;
+
+      const selectedIndex = detailCard.dataset.emailIndex || "";
+      const selectedUid = detailCard.dataset.emailUid || "";
+      selectedInput.value = selectedIndex;
+      selectedUidInput.value = selectedUid;
+
+      const rows = document.querySelectorAll("#mailRows .clickable-row[data-email-index][data-email-uid]");
+      let selectedRow = null;
+      rows.forEach(function (row) {
+        const isSelected = row.dataset.emailUid === selectedUid;
+        row.classList.toggle("is-selected", isSelected);
+        if (isSelected) selectedRow = row;
+      });
+
+      if (selectedRow) {
+        selectedRow.scrollIntoView({ block: "center", inline: "nearest" });
+      }
+    }
+
+    function currentUiView() {
+      if (document.getElementById("selectedEmailUid")) return "inbox";
+      if (document.getElementById("stats")) return "dashboard";
+      return "";
+    }
+
+    function dashboardStateUrl() {
+      const url = new URL("/api/ui-state", window.location.origin);
+      url.searchParams.set("view", "dashboard");
+      return url.toString();
+    }
+
+    function inboxStateUrl() {
+      const url = new URL("/api/ui-state", window.location.origin);
+      url.searchParams.set("view", "inbox");
+      url.searchParams.set("limit", "80");
+      const mailSearch = document.getElementById("mailSearch");
+      const categoryFilter = document.getElementById("categoryFilter");
+      const selectedIndex = document.getElementById("selectedEmailIndex");
+      const selectedUid = document.getElementById("selectedEmailUid");
+      if (mailSearch && mailSearch.value) url.searchParams.set("q", mailSearch.value);
+      if (categoryFilter && categoryFilter.value) url.searchParams.set("category", categoryFilter.value);
+      if (selectedIndex && selectedIndex.value) url.searchParams.set("selected_email_index", selectedIndex.value);
+      if (selectedUid && selectedUid.value) url.searchParams.set("selected_email_uid", selectedUid.value);
+      return url.toString();
+    }
+
+    function refreshFragment(url, targetSelector) {
+      const target = document.querySelector(targetSelector);
+      if (!target || !window.htmx) return;
+      htmx.ajax("GET", url, { target, swap: "innerHTML" });
+    }
+
+    function refreshInboxRows() {
+      const url = new URL("/ui/mail-rows", window.location.origin);
+      url.searchParams.set("limit", "80");
+      url.searchParams.set("view", "inbox");
+      const mailSearch = document.getElementById("mailSearch");
+      const categoryFilter = document.getElementById("categoryFilter");
+      const selectedIndex = document.getElementById("selectedEmailIndex");
+      const selectedUid = document.getElementById("selectedEmailUid");
+      if (mailSearch && mailSearch.value) url.searchParams.set("q", mailSearch.value);
+      if (categoryFilter && categoryFilter.value) url.searchParams.set("category", categoryFilter.value);
+      if (selectedIndex && selectedIndex.value) url.searchParams.set("selected_email_index", selectedIndex.value);
+      if (selectedUid && selectedUid.value) url.searchParams.set("selected_email_uid", selectedUid.value);
+      refreshFragment(url.toString(), "#mailRows");
+    }
+
+    function refreshInboxDetail(selectedIndex) {
+      if (selectedIndex === null || selectedIndex === undefined || selectedIndex === "") return;
+      refreshFragment(`/ui/emails/${selectedIndex}`, "#email-detail");
+    }
+
+    function applyDashboardState(state) {
+      const previous = uiSyncState.versions;
+      const next = state.versions || {};
+      if (previous.auto_sync && previous.auto_sync !== next.auto_sync) {
+        refreshFragment("/ui/auto-sync", "#auto-sync");
+      }
+      if (previous.stats && previous.stats !== next.stats) {
+        refreshFragment("/ui/stats", "#stats");
+      }
+      if (previous.distribution && previous.distribution !== next.distribution) {
+        refreshFragment("/ui/dashboard-distribution", "#dashboardDistribution");
+      }
+      if (previous.mail_rows && previous.mail_rows !== next.mail_rows) {
+        refreshFragment("/ui/mail-rows?view=dashboard", "#dashboardMailRows");
+      }
+      uiSyncState.versions = next;
+    }
+
+    function applyInboxState(state) {
+      const previous = uiSyncState.versions;
+      const next = state.versions || {};
+      const selectedIndex = document.getElementById("selectedEmailIndex");
+      const selectedUid = document.getElementById("selectedEmailUid");
+      if (selectedIndex && state.selected_email_index !== null && state.selected_email_index !== undefined) {
+        selectedIndex.value = String(state.selected_email_index);
+      }
+      if (selectedUid && state.selected_email_uid) {
+        selectedUid.value = state.selected_email_uid;
+      }
+
+      if (previous.mail_rows && previous.mail_rows !== next.mail_rows) {
+        refreshInboxRows();
+      }
+      if (previous.detail && previous.detail !== next.detail) {
+        refreshInboxDetail(state.selected_email_index);
+      }
+      uiSyncState.versions = next;
+    }
+
+    function scheduleUiPoll(delayMs) {
+      window.clearTimeout(uiSyncState.timer);
+      uiSyncState.timer = window.setTimeout(runUiPoll, delayMs);
+    }
+
+    async function runUiPoll() {
+      const view = currentUiView();
+      if (!view) {
+        scheduleUiPoll(10000);
+        return;
+      }
+
+      const url = view === "dashboard" ? dashboardStateUrl() : inboxStateUrl();
+      try {
+        const response = await fetch(url, {
+          headers: { Accept: "application/json" },
+          cache: "no-store",
+        });
+        if (!response.ok) throw new Error(`ui state ${response.status}`);
+        const state = await response.json();
+        if (uiSyncState.view !== view || !uiSyncState.versions || Object.keys(uiSyncState.versions).length === 0) {
+          uiSyncState.view = view;
+          uiSyncState.versions = state.versions || {};
+        } else if (view === "dashboard") {
+          applyDashboardState(state);
+        } else {
+          applyInboxState(state);
+        }
+      } catch (error) {
+        console.warn("UI sync poll failed", error);
+      } finally {
+        scheduleUiPoll(view === "inbox" ? 5000 : 10000);
+      }
+    }
+
+    function resetUiSync() {
+      uiSyncState.view = currentUiView();
+      uiSyncState.versions = {};
+      scheduleUiPoll(1200);
+    }
+
+    async function checkClientVersion() {
+      try {
+        const response = await fetch("/api/client-version", {
+          headers: { Accept: "application/json" },
+          cache: "no-store",
+        });
+        if (!response.ok) return;
+        const payload = await response.json();
+        if (payload.version && payload.version !== uiSyncState.assetVersion) {
+          window.location.reload();
+        }
+      } catch (error) {
+        console.warn("client version check failed", error);
+      }
+    }
+
+    document.body.addEventListener("htmx:afterSwap", function (event) {
+      if (event.detail.target.id === "main-panel") {
+        const requestPath = event.detail.requestConfig.path || "";
+        const requestUrl = new URL(requestPath, window.location.origin);
+        document.querySelectorAll(".nav button").forEach(function (button) {
+          button.classList.remove("active");
+          if (button.getAttribute("hx-get") === requestUrl.pathname) {
+            button.classList.add("active");
+          }
+        });
+      }
+
+      if (["main-panel", "email-detail", "mailRows"].includes(event.detail.target.id)) {
+        limitInboxRows();
+        syncInboxSelection();
+      }
+
+      if (["main-panel", "email-detail", "mailRows", "dashboardMailRows", "stats", "dashboardDistribution", "auto-sync"].includes(event.detail.target.id)) {
+        resetUiSync();
+      }
+
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+      limitInboxRows();
+      syncInboxSelection();
+      resetUiSync();
+      window.setInterval(checkClientVersion, 15000);
+    });
+
+    window.addEventListener("resize", limitInboxRows);
+  </script>
+</body>
+</html>

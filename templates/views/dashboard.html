@@ -1,0 +1,68 @@
+{% from "macros.html" import category_chip with context %}
+<section class="view" data-view="dashboard">
+  <div class="section-head">
+    <div>
+      <h1>Dashboard</h1>
+      <p class="subtle">실시간 수신 메일 라우팅 현황</p>
+    </div>
+    <div
+      id="auto-sync"
+      hx-swap="innerHTML"
+    >
+      {% include "partials/auto_sync.html" ignore missing %}
+    </div>
+  </div>
+
+  <div
+    id="stats"
+    hx-swap="innerHTML"
+  >
+    {% include "partials/stats.html" %}
+  </div>
+
+  <div class="dashboard-grid">
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Recent Mail Streams</h2>
+        <span
+          class="chip current-category-chip"
+          id="currentCategoryBadge"
+          style="background: #F3F4F6; color: #6B7280; border: 0.5px solid #6B728040;"
+          aria-live="polite"
+        >
+          <span class="chip-dot" id="currentCategoryDot" style="background: #6B7280;"></span>
+          <span id="currentCategoryLabel">전체</span>
+        </span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Status</th>
+              <th>Sender</th>
+              <th class="subject-col">Subject</th>
+              <th>Classification</th>
+              <th>Receiver</th>
+              <th>Time</th>
+            </tr>
+          </thead>
+          <tbody
+            id="dashboardMailRows"
+          >
+            {% set mail_rows_mode = "dashboard" %}
+            {% include "partials/mail_rows.html" %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <aside class="panel">
+      <div class="panel-head">
+        <h2>Category Distribution</h2>
+      </div>
+      <div class="panel-body" id="dashboardDistribution">
+        {% include "partials/dashboard_distribution.html" %}
+      </div>
+    </aside>
+  </div>
+</section>

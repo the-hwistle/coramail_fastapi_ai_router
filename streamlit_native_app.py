@@ -223,19 +223,15 @@ def render_inbox(emails: list[dict[str, Any]]) -> None:
             st.write(f"📎 **{item.get('filename', 'attachment')}** · {item.get('content_type', '')}")
 
     with right:
-        action1, action2 = st.columns(2)
-        with action1:
-            st.button("Confirm Routing", type="primary", use_container_width=True)
-        with action2:
-            if st.button("Classify", use_container_width=True):
-                with st.spinner("LLM 분류 중..."):
-                    result = api_post("/api/classify", {"email_index": email["index"], "retrieval_limit": 5})
-                st.session_state["latest_classification"] = result.get("classification", {})
-                st.success("분류 완료")
+        st.button("Confirm Routing", type="primary", use_container_width=True)
+        if classification.get("mail_category"):
+            st.caption("이 메일은 수집 파이프라인에서 자동 분류되어 저장되었습니다.")
+        else:
+            st.caption("이 화면을 열 때 분류/요약이 비어 있으면 백엔드가 자동으로 처리합니다.")
 
-        shown = st.session_state.get("latest_classification") if st.session_state.get("latest_classification") else classification
+        shown = classification
         st.subheader("AI Executive Summary")
-        st.write("\n".join(f"- {reason}" for reason in shown.get("reasons", [])) or "아직 분류 결과가 없습니다.")
+        st.write(shown.get("summary") or shown.get("executive_summary") or "\n".join(f"- {reason}" for reason in shown.get("reasons", [])) or "아직 분류 결과가 없습니다.")
         st.subheader("Extracted Entities")
         st.json(
             {
@@ -257,8 +253,12 @@ def render_search() -> None:
     with col2:
         run = st.button("Search", type="primary", use_container_width=True)
     if run:
-        with st.spinner("Qdrant 검색 및 답변 생성 중..."):
+        progress = st.progress(0, text="질문 의도 분석 중...")
+        st.info("검색 단계: 질문 의도 분석 -> Qdrant 검색 -> 근거 정리 -> Ollama 답변 생성")
+        progress.progress(30, text="Qdrant 벡터/메타데이터 검색 중...")
+        with st.spinner("Ollama 답변 생성 중..."):
             result = api_post("/api/search", {"query": query, "limit": limit, "with_answer": True})
+        progress.progress(85, text="검색 근거 렌더링 중...")
         st.subheader("Generated Answer")
         st.write(result.get("answer") or "답변 없음")
         st.subheader("Query Intent")
@@ -268,6 +268,7 @@ def render_search() -> None:
             with st.expander(f"{item.get('source')} · score {item.get('final_score')}"):
                 st.write(item.get("preview") or "본문 미리보기 없음")
                 st.json(item)
+        progress.progress(100, text="검색 완료")
 
 
 def render_settings(summary: dict[str, Any]) -> None:

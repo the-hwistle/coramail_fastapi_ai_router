@@ -1,0 +1,55 @@
+{% from "macros.html" import category_chip with context %}
+<section class="view" data-view="settings">
+  <div class="section-head">
+    <div>
+      <h1>Workflow Settings</h1>
+      <p class="subtle">Local LLM, Qdrant, routing policy</p>
+    </div>
+  </div>
+
+  <div class="settings-grid">
+    <article class="stat">
+      <span class="label">LLM Connection</span>
+      <div class="stat-line">
+        <strong>{{ health.llm_model or "-" }}</strong>
+        <span class="material-symbols-outlined">memory</span>
+      </div>
+      <p>{{ "Active" if health.ok else "Error" }}</p>
+    </article>
+    <article class="stat">
+      <span class="label">Vector Database</span>
+      <div class="stat-line">
+        <strong>{{ summary.qdrant_points.emails or "-" }} / {{ summary.qdrant_points.attachments or "-" }}</strong>
+        <span class="material-symbols-outlined">database</span>
+      </div>
+      <p>{{ health.qdrant_path or "-" }}</p>
+    </article>
+    <article class="stat">
+      <span class="label">Classification Store</span>
+      <div class="stat-line">
+        <strong>{{ summary.classification_store or "-" }}</strong>
+        <span class="material-symbols-outlined">account_tree</span>
+      </div>
+      <p>{{ summary.classified_count or 0 }} classified</p>
+    </article>
+  </div>
+
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Email Classification Rules</h2>
+      <span class="label">Generated from backend policy</span>
+    </div>
+    <div class="panel-body rule-list">
+      {% set counts = summary.business_labels or summary.mail_categories or {} %}
+      {% for category in category_order[:-1] %}
+        <div class="rule-row">
+          <span class="mono">{{ "%02d"|format(loop.index) }}</span>
+          <span>{{ category_chip(category) }}</span>
+          <span class="material-symbols-outlined">arrow_forward</span>
+          <strong>{{ route_label([route_by_category.get(category, "general")]) }}</strong>
+          <span>{{ counts.get(category, 0) }}건</span>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+</section>

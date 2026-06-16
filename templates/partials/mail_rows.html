@@ -1,0 +1,41 @@
+{% from "macros.html" import category_chip with context %}
+{% set is_dashboard_rows = mail_rows_mode == "dashboard" %}
+{% for email in emails %}
+  {% set classification = email.classification or {} %}
+  {% set label = email.business_label or business_label(classification) %}
+  {% set state = email.classification_state or "unclassified" %}
+  <tr
+    hx-get="{% if is_dashboard_rows %}/ui/inbox?email_index={{ email.index }}&email_uid={{ email.email_uid|urlencode }}{% else %}/ui/emails/{{ email.index }}{% endif %}"
+    hx-target="{% if is_dashboard_rows %}#main-panel{% else %}#email-detail{% endif %}"
+    hx-swap="innerHTML"
+    hx-on:click="if (document.getElementById('selectedEmailIndex')) document.getElementById('selectedEmailIndex').value='{{ email.index }}'; if (document.getElementById('selectedEmailUid')) document.getElementById('selectedEmailUid').value='{{ email.email_uid }}';"
+    class="clickable-row{% if selected_email_uid and email.email_uid == selected_email_uid %} is-selected{% elif selected_email_uid|default('') == '' and selected_email_index is not none and email.index == selected_email_index %} is-selected{% endif %}"
+    data-email-index="{{ email.index }}"
+    data-email-uid="{{ email.email_uid }}"
+    data-business-label="{{ label }}"
+  >
+    <td>
+      <span class="row-status {{ state }}">
+        <span class="material-symbols-outlined">
+          {% if state == "completed" %}auto_awesome{% elif state == "running" %}progress_activity{% elif state == "queued" %}schedule{% elif state == "failed" %}error{% else %}pending{% endif %}
+        </span>
+        {{ email.classification_state_label or state }}
+      </span>
+    </td>
+    <td class="mono truncate">{{ email.from }}</td>
+    <td class="truncate subject-col"><strong>{{ email.subject or "(no subject)" }}</strong></td>
+    <td>{{ category_chip(label) }}</td>
+    <td>{{ route_label(classification.routing_labels or []) }}</td>
+    <td class="mono">{{ format_mail_datetime(email.date or email.received_at or email.created_at) }}</td>
+  </tr>
+{% else %}
+  <tr>
+    <td colspan="6" class="empty-cell">표시할 이메일이 없습니다.</td>
+  </tr>
+{% endfor %}
+
+<tr id="categoryFilterEmptyRow" hidden>
+  <td colspan="6" class="empty-cell">
+    선택한 카테고리에 해당하는 이메일이 없습니다.
+  </td>
+</tr>

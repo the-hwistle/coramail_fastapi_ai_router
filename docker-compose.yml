@@ -1,36 +1,51 @@
 services:
+  ollama:
+    image: ollama/ollama:latest
+    environment:
+      OLLAMA_HOST: 0.0.0.0:11434
+    volumes:
+      - ollama-data:/root/.ollama
+    ports:
+      - "${CORAMAIL_OLLAMA_HOST_PORT:-11435}:11434"
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: coramail
+      POSTGRES_USER: coramail
+      POSTGRES_PASSWORD: coramail
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U coramail -d coramail"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
   api:
     build:
       context: .
     command: uv run uvicorn app:app --host 0.0.0.0 --port 8011
     environment:
       CORAMAIL_PIPELINE_DIR: /app/pipeline
-      OLLAMA_HOST: http://host.docker.internal:11434
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+      DATABASE_URL: postgresql://coramail:coramail@postgres:5432/coramail
+      OLLAMA_HOST: http://ollama:11434
     volumes:
+      - ./app.py:/app/app.py
+      - ./coramail_db.py:/app/coramail_db.py
+      - ./static:/app/static
+      - ./templates:/app/templates
       - ./pipeline:/app/pipeline
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ollama:
+        condition: service_started
     ports:
       - "8011:8011"
 
-  frontend-html:
-    build:
-      context: .
-    command: uv run streamlit run streamlit_app.py --server.address 0.0.0.0 --server.port 8501 --server.headless true
-    environment:
-      CORAMAIL_API_BASE_URL: http://127.0.0.1:8011
-    depends_on:
-      - api
-    ports:
-      - "8501:8501"
-
-  frontend-native:
-    build:
-      context: .
-    command: uv run streamlit run streamlit_native_app.py --server.address 0.0.0.0 --server.port 8502 --server.headless true
-    environment:
-      CORAMAIL_API_BASE_URL: http://api:8011
-    depends_on:
-      - api
-    ports:
-      - "8502:8502"
+volumes:
+  postgres-data:
+  ollama-data:

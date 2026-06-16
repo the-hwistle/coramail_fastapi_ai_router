@@ -1,0 +1,74 @@
+<section class="view" data-view="inbox">
+  <div class="section-head">
+    <div>
+      <h1>Email Detail & AI Analysis</h1>
+      <p class="subtle">PostgreSQL mail stream</p>
+    </div>
+    <div class="section-tools">
+      <div class="filter-row">
+        <input
+          class="input"
+          id="mailSearch"
+          name="q"
+          placeholder="Search sender, subject, body"
+          hx-get="/ui/mail-rows?limit=80"
+          hx-trigger="keyup changed delay:400ms"
+          hx-target="#mailRows"
+          hx-include="#categoryFilter,#selectedEmailIndex,#selectedEmailUid"
+        >
+        <select
+          class="input"
+          id="categoryFilter"
+          name="category"
+          hx-get="/ui/mail-rows?limit=80"
+          hx-trigger="change"
+          hx-target="#mailRows"
+          hx-include="#mailSearch,#selectedEmailIndex,#selectedEmailUid"
+        >
+          <option value="">All</option>
+          {% for category in category_order %}
+            <option value="{{ category }}">{{ category }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="inbox-layout">
+    <input type="hidden" id="selectedEmailIndex" name="selected_email_index" value="{{ selected_email_index if selected_email_index is not none else '' }}">
+    <input type="hidden" id="selectedEmailUid" name="selected_email_uid" value="{{ selected_email_uid or '' }}">
+    <section class="panel inbox-summary-panel">
+      <div class="panel-head">
+        <h2>Inbox</h2>
+        <span class="label">{{ emails | length }} loaded</span>
+      </div>
+      <div class="table-wrap inbox-list inbox-table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Status</th>
+              <th>Sender</th>
+              <th class="subject-col">Subject</th>
+              <th>Classification</th>
+              <th>Receiver</th>
+              <th>Time</th>
+            </tr>
+          </thead>
+          <tbody
+            id="mailRows"
+            hx-get="/ui/mail-rows?limit=80"
+            hx-include="#mailSearch,#categoryFilter,#selectedEmailIndex,#selectedEmailUid"
+            hx-swap="innerHTML"
+          >
+            {% set mail_rows_mode = "inbox" %}
+            {% include "partials/mail_rows.html" %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="email-detail" class="inbox-detail-panel">
+      {% include "partials/email_detail.html" %}
+    </section>
+  </div>
+</section>

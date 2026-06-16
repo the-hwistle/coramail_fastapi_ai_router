@@ -130,25 +130,6 @@
     .view { display: none; }
     .view.active { display: block; }
     .section-head { display: flex; justify-content: space-between; align-items: end; gap: 16px; margin-bottom: 24px; }
-    .sync-status {
-      min-width: 280px;
-      padding: 10px 12px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: var(--surface);
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 18px;
-      text-align: right;
-    }
-    .sync-status strong {
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 6px;
-      color: var(--primary);
-      font-size: 13px;
-    }
     h1, h2, h3, p { margin-top: 0; }
     h2 { margin-bottom: 4px; font-size: 24px; line-height: 32px; color: var(--primary); }
     h3 { margin-bottom: 0; font-size: 18px; line-height: 24px; color: var(--primary); }
@@ -200,7 +181,6 @@
     tr:hover td { background: var(--surface-low); }
     .mono { font-size: 13px; line-height: 20px; }
     .truncate { max-width: 290px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .truncate.subject-col { max-width: 350px; }
     .chip {
       display: inline-flex;
       align-items: center;
@@ -315,9 +295,6 @@
       .title { min-width: 0; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 20px; line-height: 28px; }
       .top-actions { flex: 0 0 auto; gap: 6px; }
       .content { overflow: visible; }
-      .section-head { align-items: stretch; flex-direction: column; }
-      .sync-status { min-width: 0; text-align: left; }
-      .sync-status strong { justify-content: flex-start; }
       .stats, .grid, .dashboard-grid, .settings-grid, .split { grid-template-columns: 1fr; }
       .split { margin: 0; }
       .email-pane { border-right: 0; border-bottom: 1px solid var(--line); }
@@ -357,9 +334,8 @@
               <h2>Mail Classification Dashboard</h2>
               <p class="subtle">Real-time supply chain communication triage</p>
             </div>
-            <div class="sync-status" id="syncStatus">
-              <strong><span class="material-symbols-outlined">sync</span>Auto Sync</strong>
-              <span>상태 확인 중...</span>
+            <div>
+              <button class="btn ghost" id="fetchBtn"><span class="material-symbols-outlined">mark_email_unread</span>Sync Gmail</button>
             </div>
           </div>
           <div class="stats" id="stats"></div>
@@ -373,7 +349,7 @@
               <div style="overflow:auto">
                 <table>
                   <thead>
-                    <tr><th>Status</th><th>Sender</th><th class="subject-col">Subject</th><th>Classification</th><th>Receiver</th><th>Time</th></tr>
+                    <tr><th>Status</th><th>Sender</th><th>Subject</th><th>Classification</th><th>Receiver</th><th>Time</th></tr>
                   </thead>
                   <tbody id="mailRows"></tbody>
                 </table>
@@ -404,7 +380,6 @@
             <section class="analysis-pane">
               <div class="sticky-actions">
                 <div class="mail-type-badge" id="inboxTypeBadge"></div>
-                <button class="btn secondary" id="classifyBtn"><span class="material-symbols-outlined">auto_awesome</span>Classify</button>
                 <button class="btn secondary" id="confirmRoutingBtn"><span class="material-symbols-outlined">check_circle</span>Confirm Routing</button>
                 <button class="btn ghost"><span class="material-symbols-outlined">more_vert</span></button>
               </div>
@@ -468,8 +443,7 @@
   </div>
 
   <script>
-    const state = { summary: null, emails: [], selectedIndex: 0, health: null, autoSync: null };
-    let loadInFlight = false;
+    const state = { summary: null, emails: [], selectedIndex: 0, health: null };
     const titles = {
       dashboard: "Mail Classification Dashboard",
       inbox: "Email Detail & AI Analysis",
@@ -478,19 +452,17 @@
       settings: "Workflow Settings"
     };
     const categoryLabels = {
-      "발주": "발주", "문의": "문의", "서비스": "서비스", "기술": "기술", "기타": "기타",
-      rfq: "문의", quote: "문의", order: "발주", payment: "기타", delivery: "서비스", technical: "기술", general: "기타", unclassified: "미분류", "미분류": "미분류"
+      rfq: "문의", quote: "견적", order: "발주", payment: "결제", delivery: "납기", technical: "기술", general: "기타", unclassified: "미분류"
     };
-    const categoryOrder = ["발주", "문의", "서비스", "기술", "기타", "미분류"];
+    const categoryOrder = ["rfq", "quote", "order", "payment", "delivery", "technical", "general", "unclassified"];
     const categoryColors = {
-      "발주": "var(--secondary)", "문의": "var(--tertiary-soft)", "서비스": "#2170e4", "기술": "#3f5f9a", "기타": "var(--surface-mid)", "미분류": "#c8c6ca",
-      rfq: "var(--tertiary-soft)", quote: "var(--tertiary-soft)", order: "var(--secondary)", payment: "var(--surface-mid)",
+      rfq: "var(--tertiary-soft)", quote: "#f2be62", order: "var(--secondary)", payment: "var(--danger)",
       delivery: "#2170e4", technical: "#3f5f9a", general: "var(--surface-mid)", unclassified: "#c8c6ca"
     };
     const routeNames = {
       sales: "발주담당자 1", quote_request: "견적담당자", quote_sent: "영업담당자", order: "발주담당자 2",
       accounting: "회계담당자", payment: "회계담당자", logistics: "물류담당자", delivery: "납기담당자",
-      service: "서비스담당자", customer_support: "서비스담당자", engineering: "기술담당자", technical: "기술담당자", general: "공통메일함"
+      engineering: "기술담당자", technical: "기술담당자", general: "공통메일함"
     };
 
     const $ = (id) => document.getElementById(id);
@@ -499,28 +471,6 @@
       if (!value) return null;
       const parsed = new Date(value);
       return Number.isNaN(parsed.getTime()) ? null : parsed;
-    };
-    const fmtDashboardDateTime = (value) => {
-      const parsed = parseEmailDate(value);
-      if (!parsed) return value || "-";
-      const dateParts = new Intl.DateTimeFormat("en-CA", {
-        timeZone: "Asia/Seoul",
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: false
-      }).formatToParts(parsed).reduce((acc, part) => {
-        if (part.type !== "literal") acc[part.type] = part.value;
-        return acc;
-      }, {});
-      const weekday = new Intl.DateTimeFormat("ko-KR", {
-        timeZone: "Asia/Seoul",
-        weekday: "short"
-      }).format(parsed).replace("요일", "");
-      return `${dateParts.year}-${dateParts.month}-${dateParts.day}(${weekday}) ${dateParts.hour}:${dateParts.minute}:${dateParts.second}`;
     };
     const fmtDate = (value) => value ? String(value).replace(/^(\w{3}, )?/, "").slice(0, 22) : "-";
     const fmtTime = (value) => {
@@ -537,16 +487,7 @@
       .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
       .replace(/__(.*?)__/g, "<strong>$1</strong>")
       .replace(/\n/g, "<br>");
-    const businessLabel = (classification = {}, email = {}) => {
-      const raw = classification.business_label || classification.label || email.business_label || classification.mail_category || "미분류";
-      return categoryLabels[raw] || raw || "미분류";
-    };
-    const isClassified = (classification = {}, email = {}) => ["발주", "문의", "서비스", "기술", "기타"].includes(businessLabel(classification, email));
-    const categoryChip = (category) => {
-      const label = categoryLabels[category] || category || "미분류";
-      const cls = label === "기술" ? "blue" : label === "서비스" ? "blue" : label === "발주" ? "red" : label === "문의" ? "gold" : "";
-      return `<span class="chip ${cls}">${escapeHtml(label)}</span>`;
-    };
+    const categoryChip = (category) => `<span class="chip ${category === "technical" ? "blue" : category === "payment" ? "red" : category === "rfq" || category === "quote" ? "gold" : ""}">${escapeHtml(categoryLabels[category] || category || "미분류")}</span>`;
     const routeLabel = (routing = []) => {
       const labels = routing.map((item) => routeNames[item] || item).filter(Boolean);
       return labels[0] || "미할당";
@@ -593,71 +534,44 @@
     }
 
     async function loadData() {
-      if (loadInFlight) return;
-      loadInFlight = true;
-      try {
-        const [healthResult, syncResult, emailsResult] = await Promise.allSettled([
-          api("/api/health"),
-          api("/api/auto-sync"),
-          api("/api/emails?limit=40&auto_classify=false")
-        ]);
-        state.health = healthResult.status === "fulfilled" ? healthResult.value : { ok: false, startup_error: healthResult.reason?.message };
-        state.autoSync = syncResult.status === "fulfilled" ? syncResult.value : { enabled: false, last_error: syncResult.reason?.message };
-        const emails = emailsResult.status === "fulfilled" ? emailsResult.value : { items: [], total: 0 };
-        state.emails = emails.items || [];
-        state.summary = {
-          email_count: state.emails.length,
-          attachment_count: state.emails.reduce((total, email) => total + (email.attachment_count || 0), 0),
-          classified_count: state.emails.filter((email) => isClassified(email.classification, email)).length,
-          routed_count: state.emails.filter((email) => email.classification?.routing_labels?.length).length,
-          duplicate_risk_count: 0,
-          mail_categories: state.emails.reduce((acc, email) => {
-            const key = businessLabel(email.classification, email);
-            acc[key] = (acc[key] || 0) + 1;
-            return acc;
-          }, {}),
-          attachment_categories: {},
-          qdrant_points: { emails: "-", attachments: "-", status: "summary loading" }
-        };
+      const [healthResult, emailsResult] = await Promise.allSettled([
+        api("/api/health"),
+        api("/api/emails?limit=80")
+      ]);
+      state.health = healthResult.status === "fulfilled" ? healthResult.value : { ok: false, startup_error: healthResult.reason?.message };
+      const emails = emailsResult.status === "fulfilled" ? emailsResult.value : { items: [], total: 0 };
+      state.emails = emails.items || [];
+      state.summary = {
+        email_count: state.emails.length,
+        attachment_count: state.emails.reduce((total, email) => total + (email.attachment_count || 0), 0),
+        classified_count: state.emails.filter((email) => email.classification?.mail_category).length,
+        routed_count: state.emails.filter((email) => email.classification?.routing_labels?.length).length,
+        duplicate_risk_count: 0,
+        mail_categories: state.emails.reduce((acc, email) => {
+          const key = email.classification?.mail_category || "unclassified";
+          acc[key] = (acc[key] || 0) + 1;
+          return acc;
+        }, {}),
+        attachment_categories: {},
+        qdrant_points: { emails: "-", attachments: "-", status: "summary loading" }
+      };
+      renderDashboard();
+      renderInbox();
+      renderAnalytics();
+      renderSettings();
+      api("/api/summary").then((summary) => {
+        state.summary = summary;
         renderDashboard();
-        renderInbox();
         renderAnalytics();
         renderSettings();
-        api("/api/summary").then((summary) => {
-          state.summary = summary;
-          renderDashboard();
-          renderAnalytics();
-          renderSettings();
-        }).catch((error) => {
-          state.summary.qdrant_points.status = error.message;
-          renderSettings();
-        });
-      } finally {
-        loadInFlight = false;
-      }
+      }).catch((error) => {
+        state.summary.qdrant_points.status = error.message;
+        renderSettings();
+      });
     }
 
     function renderDashboard() {
       const s = state.summary || {};
-      const sync = state.autoSync || {};
-      const syncLabel = !sync.enabled ? "Auto Sync Off" : sync.running ? "Syncing Gmail" : sync.last_exit_code === 0 ? "Auto Sync Live" : "Auto Sync Ready";
-      const syncIcon = sync.running ? "sync" : sync.enabled ? "task_alt" : "sync_disabled";
-      const syncDetail = sync.running
-        ? `PID ${sync.current_pid || "-"} · ${sync.last_started_at || ""}`
-        : sync.last_error
-          ? sync.last_error
-          : sync.last_completed_at
-            ? `Last checked ${sync.last_completed_at}`
-            : `Every ${sync.interval_seconds || 60}s`;
-      $("syncStatus").innerHTML = `<strong><span class="material-symbols-outlined">${syncIcon}</span>${escapeHtml(syncLabel)}</strong><span>${escapeHtml(syncDetail)}</span>`;
-      $("jobProgress").innerHTML = sync.running
-        ? progressCard(
-            "Gmail 자동 동기화 실행 중",
-            ["Gmail fetch", "Qdrant 증분 인덱싱", "LLM 자동 분류", "PostgreSQL 저장"],
-            1,
-            sync.last_log_path ? `Log: ${sync.last_log_path}` : ""
-          )
-        : "";
       const todayCount = s.today_email_count ?? s.total_mails_today ?? state.emails.filter(isTodayEmail).length;
       const classifiedPct = s.email_count ? Math.round((s.classified_count / s.email_count) * 100) : 0;
       $("stats").innerHTML = [
@@ -669,8 +583,7 @@
         <div class="stat"><span class="label">${label}</span><div style="display:flex;align-items:center;justify-content:space-between"><div class="stat-value">${value}</div><span class="material-symbols-outlined" style="color:var(--secondary)">${icon}</span></div><div class="stat-note">${escapeHtml(note)}</div></div>
       `).join("");
       $("categorizedPct").textContent = `${classifiedPct}%`;
-      const categoryCounts = s.business_labels || s.mail_categories || {};
-      const cats = categoryOrder.map((key) => [key, Number(categoryCounts[key] || 0)]);
+      const cats = categoryOrder.map((key) => [key, Number((s.mail_categories || {})[key] || 0)]);
       const totalByCategory = cats.reduce((total, [, count]) => total + count, 0);
       let cursor = 0;
       const segments = cats.filter(([, count]) => count > 0).map(([key, count]) => {
@@ -685,15 +598,13 @@
       `).join("");
       $("mailRows").innerHTML = state.emails.length ? state.emails.slice(0, 12).map((email) => {
         const c = email.classification || {};
-        const label = businessLabel(c, email);
-        const classified = isClassified(c, email);
         return `<tr data-index="${email.index}">
-          <td><span class="row-status"><span class="material-symbols-outlined">${classified ? "auto_awesome" : "pending"}</span>${classified ? "AI OK" : "PENDING"}</span></td>
+          <td><span class="row-status"><span class="material-symbols-outlined">${c.mail_category ? "auto_awesome" : "pending"}</span>${c.mail_category ? "AI OK" : "PENDING"}</span></td>
           <td class="mono">${escapeHtml(email.from)}</td>
-          <td class="truncate subject-col"><strong>${escapeHtml(email.subject || "(no subject)")}</strong></td>
-          <td>${categoryChip(label)}</td>
+          <td class="truncate"><strong>${escapeHtml(email.subject || "(no subject)")}</strong></td>
+          <td>${categoryChip(c.mail_category || "unclassified")}</td>
           <td>${escapeHtml(routeLabel(c.routing_labels || []))}</td>
-          <td class="subtle">${escapeHtml(fmtDashboardDateTime(email.date || email.received_at || email.created_at))}</td>
+          <td class="subtle">${escapeHtml(fmtTime(email.date || email.received_at || email.created_at))}</td>
         </tr>`;
       }).join("") : `<tr><td colspan="6"><div class="empty">PostgreSQL에 저장된 메일이 없습니다.</div></td></tr>`;
       document.querySelectorAll("#mailRows tr[data-index]").forEach((row) => row.addEventListener("click", () => {
@@ -708,14 +619,14 @@
         $("emailDetail").innerHTML = `<div class="empty">표시할 이메일이 없습니다.</div>`;
         $("analysisDetail").innerHTML = `<div class="empty">분석 결과가 없습니다.</div>`;
         $("autoClassifyStatus").innerHTML = "";
-        $("inboxTypeBadge").innerHTML = `<span class="label">Mail Type</span>${categoryChip("미분류")}`;
+        $("inboxTypeBadge").innerHTML = `<span class="label">Mail Type</span>${categoryChip("unclassified")}`;
         return;
       }
       if (!state.emails.some((email) => email.index === state.selectedIndex)) state.selectedIndex = state.emails[0].index;
       $("emailSelect").innerHTML = state.emails.map((email) => `<option value="${email.index}" ${email.index === state.selectedIndex ? "selected" : ""}>${escapeHtml((email.subject || "(no subject)").slice(0, 64))}</option>`).join("");
       const email = state.emails.find((item) => item.index === state.selectedIndex) || state.emails[0];
       const c = email.classification || {};
-      const mailCategory = businessLabel(c, email);
+      const mailCategory = c.mail_category || "unclassified";
       $("detailSubject").textContent = email.subject || "(no subject)";
       $("detailMeta").textContent = `${email.from || "-"} · ${fmtDate(email.date)}`;
       $("inboxTypeBadge").innerHTML = `<span class="label">Mail Type</span>${categoryChip(mailCategory)}`;
@@ -726,14 +637,14 @@
         <div><span class="subtle">${escapeHtml(email.to || "")}</span></div>
         <div class="attachment-list"><span class="label">${email.attachment_count || 0} Attachment(s)</span>${attachmentHtml}</div>
         <div class="email-body">${escapeHtml(email.body || email.body_preview || "본문 없음")}</div>`;
-      $("autoClassifyStatus").innerHTML = isClassified(c, email)
-        ? `<div class="notice" style="color:var(--ok)">Qdrant 하이브리드 분류 완료: ${categoryChip(mailCategory)} ${Math.round(((c.label_confidence ?? c.confidence) || 0) * 100)}% confidence</div>`
+      $("autoClassifyStatus").innerHTML = c.mail_category
+        ? `<div class="notice" style="color:var(--ok)">메일 유형 자동 분류 완료: 수집 파이프라인에서 PostgreSQL에 저장되었습니다.</div>`
         : `<div class="notice">메일 유형은 자동으로 분류됩니다. 수집과 분석이 끝나면 이 화면에 반영됩니다.</div>`;
       renderAnalysis(email);
     }
 
     function typeSpecificSections(email, c) {
-      const category = businessLabel(c, email);
+      const category = c.mail_category || "unclassified";
       const refs = c.business_refs || [];
       const vessels = c.vessel_names || [];
       const commonRows = [
@@ -742,12 +653,6 @@
         ["Assigned To", escapeHtml(routeLabel(c.routing_labels || []))]
       ];
       const rowsByCategory = {
-        "문의": [["Request Type", "Inquiry / Quotation"], ["Required Action", "Review request and prepare quotation"], ["Structured Docs", c.has_structured_document ? "Yes" : "No"]],
-        "발주": [["Request Type", "Purchase Order"], ["Required Action", "Confirm order details"], ["Structured Docs", c.has_structured_document ? "Yes" : "No"]],
-        "서비스": [["Request Type", "Service"], ["Required Action", "Check service request, schedule, or issue status"], ["Structured Docs", c.has_structured_document ? "Yes" : "No"]],
-        "기술": [["Request Type", "Technical"], ["Required Action", "Review technical issue and required documents"], ["Structured Docs", c.has_structured_document ? "Yes" : "No"]],
-        "기타": [["Request Type", "General"], ["Required Action", "Review and assign if needed"], ["Structured Docs", c.has_structured_document ? "Yes" : "No"]],
-        "미분류": [["Request Type", "Unclassified"], ["Required Action", "Run classification or review manually"], ["Structured Docs", c.has_structured_document ? "Yes" : "No"]],
         rfq: [["Request Type", "RFQ / Inquiry"], ["Required Action", "Prepare quotation"], ["Structured Docs", c.has_structured_document ? "Yes" : "No"]],
         quote: [["Request Type", "Quotation"], ["Required Action", "Review price and delivery terms"], ["Structured Docs", c.has_structured_document ? "Yes" : "No"]],
         order: [["Request Type", "Purchase Order"], ["Required Action", "Confirm order details"], ["Structured Docs", c.has_structured_document ? "Yes" : "No"]],
@@ -768,8 +673,6 @@
       const reasons = c.reasons || [];
       const refs = c.business_refs || [];
       const attachments = c.attachments || [];
-      const evidence = c.label_evidence || [];
-      const scores = c.label_scores || {};
       const summary = c.executive_summary || c.summary || email.ai_summary || email.summary || "";
       const summaryHtml = summary
         ? `<p>${escapeHtml(summary)}</p>`
@@ -777,7 +680,7 @@
           ? `<ul>${reasons.map((reason) => `<li>${escapeHtml(reason)}</li>`).join("")}</ul>`
           : `<p class="subtle">요약문이 아직 생성되지 않았습니다. 메일 본문과 첨부파일 분석이 끝나면 자동으로 표시됩니다.</p>`;
       $("analysisDetail").innerHTML = `
-        <div class="panel"><div class="panel-head"><h3>AI Executive Summary</h3><span class="chip blue">${Math.round(((c.label_confidence ?? c.confidence) || 0) * 100)}% confidence</span></div>
+        <div class="panel"><div class="panel-head"><h3>AI Executive Summary</h3><span class="chip blue">${Math.round((c.confidence || 0) * 100)}% confidence</span></div>
           <div class="panel-body">
             ${summaryHtml}
           </div>
@@ -789,11 +692,7 @@
             <tr><td>Vessel</td><td>${(c.vessel_names || []).map(escapeHtml).join(", ") || "-"}</td></tr>
             <tr><td>Routing</td><td>${escapeHtml(routeLabel(c.routing_labels || []))}</td></tr>
             <tr><td>Structured Docs</td><td>${c.has_structured_document ? "Yes" : "No"}</td></tr>
-            <tr><td>Hybrid Scores</td><td>${Object.entries(scores).length ? Object.entries(scores).map(([key, value]) => `${escapeHtml(key)} ${Number(value).toFixed(2)}`).join(" · ") : "-"}</td></tr>
           </tbody></table>
-        </div>
-        <div class="panel"><div class="panel-head"><h3>Qdrant Hybrid Evidence</h3><span class="label">${evidence.length} result(s)</span></div>
-          <div class="panel-body">${evidence.length ? evidence.slice(0, 5).map((item) => `<div class="notice"><strong>${escapeHtml(item.filename || item.subject || item.source || "evidence")}</strong><br>${categoryChip(item.label || "미분류")} · score ${escapeHtml(item.score ?? "-")}<br><span class="subtle">${escapeHtml(item.preview || "")}</span></div>`).join("") : `<p class="subtle">표시할 Qdrant 근거가 없습니다.</p>`}</div>
         </div>
         <div class="panel"><div class="panel-head"><h3>Attachments' Summary</h3></div>
           <div class="panel-body">${attachments.length ? attachments.map((item) => `<div class="notice"><strong>${escapeHtml(item.filename)}</strong><br>${escapeHtml(item.document_category_label || item.document_category || "미분류")} · ${escapeHtml(item.form_type || "")}</div>`).join("") : `<p class="subtle">첨부 분석 요약이 아직 없습니다.</p>`}</div>
@@ -853,47 +752,40 @@
     function renderSettings() {
       const h = state.health || {};
       const s = state.summary || {};
-      const categoryCounts = s.business_labels || s.mail_categories || {};
       $("settingsCards").innerHTML = [
         ["LLM Connection", h.llm_model || "-", "Ollama (Local)", h.ok ? "Active" : "Error", "memory"],
         ["Vector Database", `${s.qdrant_points?.emails ?? "-"} / ${s.qdrant_points?.attachments ?? "-"}`, h.qdrant_path || "-", "Indexed", "database"],
-        ["Business Labels", categoryOrder.map((key) => `${key} ${categoryCounts[key] || 0}`).join(" · "), "Qdrant hybrid classification", "Live", "account_tree"]
+        ["Duplicate Prevention", "0.85", "Semantic similarity threshold", "Enabled", "copy_all"]
       ].map(([title, value, desc, status, icon]) => `<div class="stat"><div style="display:flex;justify-content:space-between;gap:12px"><span class="material-symbols-outlined" style="color:var(--secondary)">${icon}</span><span class="chip blue">${status}</span></div><h3 style="margin-top:16px">${title}</h3><div class="stat-value" style="font-size:20px;line-height:28px">${escapeHtml(value)}</div><p class="subtle">${escapeHtml(desc)}</p></div>`).join("");
       const rules = [
-        ["01", "Business Label", "발주", "Route To", "발주담당자"],
-        ["02", "Business Label", "문의", "Route To", "견적담당자"],
-        ["03", "Business Label", "서비스", "Route To", "서비스담당자"],
-        ["04", "Business Label", "기술", "Route To", "기술담당자"],
-        ["05", "Business Label", "기타", "Route To", "공통메일함"]
-      ].map((row) => [...row, categoryCounts[row[2]] || 0]);
-      $("ruleRows").innerHTML = rules.map(([no, type, condition, action, target, count]) => `<div class="rule-row"><span class="mono">${no}</span><span><span class="chip">${type}</span> <strong>${categoryChip(condition)}</strong></span><span class="material-symbols-outlined">arrow_forward</span><span><span class="chip">${action}</span> ${target} · ${count}건</span><button class="icon-btn" title="Rule is generated from backend classification policy"><span class="material-symbols-outlined">database</span></button></div>`).join("");
+        ["01", "Category", "quote / rfq / order", "Route To", "발주·견적 담당자"],
+        ["02", "Category", "technical", "Route To", "기술 담당자"],
+        ["03", "Category", "payment", "Route To", "회계 담당자"],
+        ["04", "Attachment", "structured document", "Action", "자동 견적 폼 후보"]
+      ];
+      $("ruleRows").innerHTML = rules.map(([no, type, condition, action, target]) => `<div class="rule-row"><span class="mono">${no}</span><span><span class="chip">${type}</span> <strong>${condition}</strong></span><span class="material-symbols-outlined">arrow_forward</span><span><span class="chip">${action}</span> ${target}</span><button class="icon-btn"><span class="material-symbols-outlined">edit</span></button></div>`).join("");
     }
 
-    async function classifySelectedEmail() {
-      const email = state.emails.find((item) => item.index === state.selectedIndex) || state.emails[0];
-      if (!email) return;
-      const button = $("classifyBtn");
-      setBusy(button, true, `<span class="material-symbols-outlined">hourglass_top</span>Classifying`);
-      $("autoClassifyStatus").innerHTML = progressCard(
-        "Qdrant 하이브리드 분류 실행 중",
-        ["이메일 로드", "Qdrant 근거 검색", "업무 레이블 산출", "PostgreSQL 저장"],
-        1,
-        email.subject || ""
+    async function launchJob(path, payload, button) {
+      setBusy(button, true, `<span class="material-symbols-outlined">hourglass_top</span>Queued`);
+      const isFetch = path === "/api/fetch";
+      $("jobProgress").innerHTML = progressCard(
+        isFetch ? "메일 수집 자동 처리 작업 시작 중" : "Qdrant 재인덱싱 작업 시작 중",
+        isFetch ? ["Gmail fetch 등록", "검색 인덱스 갱신 예정", "메일 유형 자동 분류 예정", "PostgreSQL 저장 예정"] : ["Qdrant writer 시작", "메일/첨부 임베딩", "컬렉션 저장"],
+        0,
+        "작업은 백그라운드에서 계속 실행됩니다. 완료 여부는 로그 파일을 확인하세요."
       );
       try {
-        const data = await api("/api/classify", {
-          method: "POST",
-          body: JSON.stringify({ email_index: email.index, retrieval_limit: 5 })
-        });
-        const updated = data.email;
-        state.emails = state.emails.map((item) => item.index === updated.index ? updated : item);
-        state.selectedIndex = updated.index;
-        renderDashboard();
-        renderInbox();
-        renderAnalytics();
-        renderSettings();
+        const data = await api(path, { method: "POST", body: JSON.stringify(payload || {}) });
+        $("jobProgress").innerHTML = `<div class="progress-card">
+          <div class="progress-row"><span class="spinner"></span><span>백그라운드 작업 실행 중</span></div>
+          <div>PID: ${escapeHtml(data.pid)}<br>Log: <span class="mono">${escapeHtml(data.log_path)}</span></div>
+          <div class="step-list"><span class="active"><span class="material-symbols-outlined">pending</span>완료 후 Refresh를 눌러 최신 DB 상태를 불러오세요.</span></div>
+        </div>`;
+        alert(`작업이 시작되었습니다.\nPID: ${data.pid}\nLog: ${data.log_path}`);
       } catch (error) {
-        $("autoClassifyStatus").innerHTML = `<div class="notice" style="color:var(--danger)">${escapeHtml(error.message)}</div>`;
+        $("jobProgress").innerHTML = `<div class="notice" style="color:var(--danger)">${escapeHtml(error.message)}</div>`;
+        alert(error.message);
       } finally {
         setBusy(button, false);
       }
@@ -905,9 +797,8 @@
     $("searchInput").addEventListener("keydown", (event) => { if (event.key === "Enter") runSearch(); });
     $("emailSelect").addEventListener("change", (event) => { state.selectedIndex = Number(event.target.value); renderInbox(); });
     $("triageBtn").addEventListener("click", () => showView("inbox"));
-    $("classifyBtn").addEventListener("click", classifySelectedEmail);
     $("confirmRoutingBtn").addEventListener("click", () => alert("라우팅 확인 상태가 UI에 반영되었습니다. 실제 Gmail 전달 API는 별도 승인 후 연결하세요."));
-    window.setInterval(loadData, 10000);
+    $("fetchBtn").addEventListener("click", () => launchJob("/api/fetch", { max_emails: 100 }, $("fetchBtn")));
 
     loadData().catch((error) => {
       $("stats").innerHTML = `<div class="notice" style="grid-column:1/-1;color:var(--danger)">${escapeHtml(error.message)}</div>`;

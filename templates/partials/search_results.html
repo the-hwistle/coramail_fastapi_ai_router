@@ -1,0 +1,58 @@
+{% from "macros.html" import category_chip with context %}
+{% if error %}
+  <div class="notice danger">{{ error }}</div>
+{% elif not result %}
+  <div class="panel">
+    <div class="panel-body">
+      <p class="subtle">검색 결과가 여기에 표시됩니다.</p>
+    </div>
+  </div>
+{% else %}
+  <div class="search-grid">
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Generated Answer</h2>
+        <span class="label">Ollama + Qdrant</span>
+      </div>
+      <div class="panel-body prose">{{ result.answer or "답변 없음" }}</div>
+    </section>
+
+    <aside class="panel">
+      <div class="panel-head">
+        <h2>Query Intent</h2>
+      </div>
+      <div class="panel-body stack-list">
+        {% for key, value in (result.intent or {}).items() %}
+          <div class="kv-row">
+            <span>{{ key }}</span>
+            <strong>{{ value | join(", ") if value is iterable and value is not string else value }}</strong>
+          </div>
+        {% endfor %}
+      </div>
+    </aside>
+  </div>
+
+  <section class="panel result-panel">
+    <div class="panel-head">
+      <h2>Evidence Results</h2>
+      <span class="label">{{ result.results | length }} result(s)</span>
+    </div>
+    <div class="panel-body result-list">
+      {% for item in result.results or [] %}
+        <article class="result-card">
+          <strong>{{ item.source }}</strong>
+          {% if item.category or item.document_category %}
+            {{ category_chip(item.document_category or item.category) }}
+          {% endif %}
+          <div class="subtle">{{ item.title }} · score {{ item.final_score }}</div>
+          {% if item.match_explanation %}
+            <div class="match-explanation">{{ item.match_explanation }}</div>
+          {% endif %}
+          <p>{{ item.preview or "본문 미리보기 없음" }}</p>
+        </article>
+      {% else %}
+        <div class="empty">검색 결과가 없습니다.</div>
+      {% endfor %}
+    </div>
+  </section>
+{% endif %}

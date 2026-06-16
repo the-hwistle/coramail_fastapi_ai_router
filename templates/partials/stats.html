@@ -1,0 +1,32 @@
+{% set total = summary.email_count or 0 %}
+{% set classified = summary.classified_count or 0 %}
+{% set classified_pct = (classified / total * 100) | round | int if total else 0 %}
+
+<div class="stats">
+  <article class="stat">
+    <span class="label">Total Mails</span>
+    <div class="stat-line">
+      <strong>{{ total }}</strong>
+      <span class="material-symbols-outlined">mail</span>
+    </div>
+    <p>전체 수신 메일 수</p>
+  </article>
+
+  <article class="stat">
+    <span class="label">Today Mails</span>
+    <div class="stat-line">
+      <strong>{{ summary.today_email_count or 0 }}</strong>
+      <span class="material-symbols-outlined">today</span>
+    </div>
+    <p>오늘 수신 메일 수</p>
+  </article>
+
+  <article class="stat">
+    <span class="label">AI Auto-Routed</span>
+    <div class="stat-line">
+      <strong>{{ classified_pct }}%</strong>
+      <span class="material-symbols-outlined">auto_awesome</span>
+    </div>
+    <p>{{ classified }} classified</p>
+  </article>
+</div>
