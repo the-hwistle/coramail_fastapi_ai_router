@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+
+<html lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<title>ForgeMail AI - Hybrid Search &amp; Knowledge Base</title>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fbf9fb;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #e4e2e4;
+            border-radius: 10px;
+        }
+        .search-glow:focus-within {
+            box-shadow: 0 0 0 2px rgba(0, 88, 190, 0.2);
+        }
+        .transition-all-custom {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "primary-fixed-dim": "#b7c7e4",
+                      "on-tertiary-container": "#a98d63",
+                      "inverse-primary": "#b7c7e4",
+                      "surface-container-lowest": "#ffffff",
+                      "secondary-fixed-dim": "#adc6ff",
+                      "on-surface": "#1b1b1d",
+                      "on-primary-fixed-variant": "#38485f",
+                      "surface-container-highest": "#e4e2e4",
+                      "background": "#fbf9fb",
+                      "on-secondary-fixed": "#001a42",
+                      "inverse-surface": "#303032",
+                      "tertiary-fixed-dim": "#e1c294",
+                      "secondary": "#0058be",
+                      "inverse-on-surface": "#f2f0f2",
+                      "on-secondary-container": "#fefcff",
+                      "on-surface-variant": "#44474d",
+                      "tertiary-container": "#392706",
+                      "secondary-container": "#2170e4",
+                      "surface-container": "#efedef",
+                      "on-secondary-fixed-variant": "#004395",
+                      "surface-tint": "#505f78",
+                      "surface-bright": "#fbf9fb",
+                      "on-tertiary": "#ffffff",
+                      "on-secondary": "#ffffff",
+                      "surface-variant": "#e4e2e4",
+                      "on-tertiary-fixed": "#281900",
+                      "error-container": "#ffdad6",
+                      "tertiary-fixed": "#fedeae",
+                      "on-error": "#ffffff",
+                      "on-primary-fixed": "#0b1c31",
+                      "on-primary": "#ffffff",
+                      "surface": "#fbf9fb",
+                      "on-error-container": "#93000a",
+                      "secondary-fixed": "#d8e2ff",
+                      "on-tertiary-fixed-variant": "#584320",
+                      "tertiary": "#201300",
+                      "surface-container-high": "#eae7ea",
+                      "primary": "#05162b",
+                      "surface-dim": "#dbd9db",
+                      "on-background": "#1b1b1d",
+                      "outline": "#75777d",
+                      "error": "#ba1a1a"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "sidebar-width": "280px",
+                      "unit": "4px",
+                      "md": "16px",
+                      "preview-pane-min": "400px",
+                      "container-margin": "24px",
+                      "gutter": "16px",
+                      "xs": "4px",
+                      "xl": "32px",
+                      "lg": "24px",
+                      "sm": "8px"
+              },
+              "fontFamily": {
+                      "headline-md": ["Inter"],
+                      "label-sm": ["Inter"],
+                      "display-lg": ["Inter"],
+                      "mono-data": ["Inter"],
+                      "title-lg": ["Inter"],
+                      "body-md": ["Inter"],
+                      "body-sm": ["Inter"],
+                      "headline-sm": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "label-md": ["Inter"]
+              },
+              "fontSize": {
+                      "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                      "label-sm": ["11px", {"lineHeight": "14px", "fontWeight": "500"}],
+                      "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "mono-data": ["13px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "title-lg": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                      "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "body-sm": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                      "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                      "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}]
+              }
+            },
+          },
+        }
+      </script>
+</head>
+<body class="bg-background text-on-surface min-h-screen flex overflow-hidden">
+<!-- SideNavBar Shell -->
+<aside class="flex flex-col h-screen fixed left-0 top-0 w-[280px] z-50 bg-primary dark:bg-on-primary-fixed">
+<div class="p-lg flex flex-col gap-sm">
+<div class="style_brand_logo text-title-lg font-title-lg font-black text-surface-bright mb-lg">
+                ForgeMail AI
+            </div>
+<div class="flex flex-col gap-1">
+<nav class="flex flex-col gap-1">
+<!-- Tab: Dashboard -->
+<a class="flex items-center gap-md py-sm transition-all duration-150 text-on-primary-container dark:text-on-primary-fixed-variant pl-5 hover:bg-primary-container hover:text-primary-fixed" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<!-- Tab: Inbox -->
+<a class="flex items-center gap-md py-sm transition-all duration-150 text-on-primary-container dark:text-on-primary-fixed-variant pl-5 hover:bg-primary-container hover:text-primary-fixed" href="#">
+<span class="material-symbols-outlined">inbox</span>
+<span class="font-label-md text-label-md">Inbox</span>
+</a>
+<!-- Tab: Search (Active) -->
+<a class="flex items-center gap-md py-sm transition-all duration-150 text-secondary-fixed font-bold border-l-4 border-secondary-fixed pl-4 opacity-90" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">search</span>
+<span class="font-label-md text-label-md">Search</span>
+</a>
+<!-- Tab: Analytics -->
+<a class="flex items-center gap-md py-sm transition-all duration-150 text-on-primary-container dark:text-on-primary-fixed-variant pl-5 hover:bg-primary-container hover:text-primary-fixed" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-label-md text-label-md">Analytics</span>
+</a>
+<!-- Tab: Settings -->
+<a class="flex items-center gap-md py-sm transition-all duration-150 text-on-primary-container dark:text-on-primary-fixed-variant pl-5 hover:bg-primary-container hover:text-primary-fixed" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+</nav>
+</div>
+</div>
+<div class="mt-auto p-lg">
+<div class="bg-primary-container rounded-lg p-md flex flex-col gap-sm">
+<p class="text-on-primary-container text-body-sm font-body-sm opacity-80">Supply Chain Intelligence</p>
+<button class="w-full bg-secondary text-on-secondary rounded-lg py-sm font-label-md text-label-md hover:bg-secondary-container transition-colors">
+                    Triage Inbox
+                </button>
+</div>
+</div>
+</aside>
+<!-- Main Workspace Area -->
+<main class="flex-1 ml-[280px] flex flex-col h-screen overflow-hidden">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center w-full px-lg py-md h-16 sticky top-0 bg-surface border-b border-outline-variant z-40">
+<div class="flex items-center gap-xl">
+<span class="font-display-lg text-display-lg text-primary tracking-tight">Search Knowledge</span>
+</div>
+<div class="flex items-center gap-md">
+<button class="p-sm rounded-full hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-outline">notifications</span>
+</button>
+<button class="p-sm rounded-full hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-outline">history</span>
+</button>
+<div class="h-8 w-px bg-outline-variant mx-xs"></div>
+<div class="flex items-center gap-sm">
+<img alt="Manufacturing Logistics Operator" class="h-8 w-8 rounded-full object-cover border border-outline-variant" data-alt="A professional headshot of a senior logistics manager in a modern industrial setting. He is wearing a sleek, dark tech-wear vest over a white collared shirt. The background shows a blurred high-tech manufacturing floor with soft blue and silver metallic tones. The lighting is crisp and cinematic, emphasizing authority and precision." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC6Zwvwez8SZU77jcgPFhx9f1qcNkUy3qrYzT23AOxtzjHzWtI_n001kobtUyKXF4IjuDBlNt3de3b-UihOoYyLoA8_IXQl3BcVDOiyx8aB9gNErpkrYBIcRPGfwXZeRVrMb5WWez3G0FxM-YMCtVJOuLTu2KU7fBlDmnAH1pm9wABcCj0kDrS5fQMDnjeeLJmo2nXwtagfpmPrhFqz2yAe0rPblbGKLYCMhv6QoZ6StnCusgpkl4AFL1-w9VKwv0BMvnmOqW9Irtk"/>
+<div class="flex flex-col">
+<span class="text-label-md font-label-md leading-tight">Admin User</span>
+<span class="text-[10px] text-outline uppercase tracking-wider">Logistics Lead</span>
+</div>
+</div>
+</div>
+</header>
+<!-- Search Canvas -->
+<div class="flex-1 flex overflow-hidden">
+<!-- Content Pane -->
+<div class="flex-1 flex flex-col p-lg gap-lg overflow-y-auto custom-scrollbar bg-surface-bright">
+<!-- Natural Language Search Box -->
+<div class="w-full max-w-4xl mx-auto">
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-md flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-secondary text-2xl">neurology</span>
+</div>
+<input class="block w-full pl-xl pr-[100px] py-xl bg-white border border-outline-variant rounded-xl text-body-lg font-body-lg placeholder:text-outline/50 focus:border-secondary focus:ring-0 search-glow transition-all-custom" placeholder="FM25006318 견적서의 납기와 총액을 찾아줘" type="text"/>
+<div class="absolute inset-y-0 right-md flex items-center">
+<button class="bg-primary text-white px-lg py-sm rounded-lg font-label-md text-label-md hover:bg-secondary transition-all">
+                                Search
+                            </button>
+</div>
+</div>
+<div class="mt-sm flex gap-md px-sm">
+<span class="text-label-sm font-label-sm text-outline">Suggested:</span>
+<button class="text-label-sm font-label-sm text-secondary hover:underline">"Status of PO-88293"</button>
+<button class="text-label-sm font-label-sm text-secondary hover:underline">"Engineering delay reports Jan"</button>
+</div>
+</div>
+<!-- Results Header -->
+<div class="flex justify-between items-end border-b border-outline-variant pb-sm">
+<h2 class="font-headline-sm text-headline-sm text-primary">Intelligence Matches</h2>
+<span class="text-body-sm font-body-sm text-outline">Showing 24 matches found in 0.42s</span>
+</div>
+<!-- Search Results List -->
+<div class="flex flex-col gap-md">
+<!-- Result Item 1: High Match -->
+<div class="bg-white border-l-4 border-amber-500 rounded-lg p-lg border border-outline-variant hover:border-secondary transition-all-custom group cursor-pointer">
+<div class="flex justify-between items-start mb-sm">
+<div class="flex flex-col gap-xs">
+<div class="flex items-center gap-sm">
+<span class="bg-amber-50 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded border border-amber-200">CRITICAL MATCH</span>
+<h3 class="font-title-lg text-title-lg text-on-surface group-hover:text-secondary transition-colors">Quote #FM25006318 - Heavy Machinery Parts</h3>
+</div>
+<span class="text-body-sm font-body-sm text-outline flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]">mail</span> 
+                                    Received from global.parts@supply.com · 2 hours ago
+                                </span>
+</div>
+<div class="text-right">
+<div class="text-headline-sm font-headline-sm text-secondary">98%</div>
+<div class="text-[10px] font-label-md text-outline uppercase">Match Score</div>
+</div>
+</div>
+<div class="bg-surface-container-low p-md rounded border border-outline-variant/30 mb-md">
+<p class="text-body-md font-body-md text-on-surface-variant italic">
+                                "...본 <span class="bg-secondary-fixed text-on-secondary-fixed px-1">견적서 FM25006318</span>의 총 액은 <span class="bg-secondary-fixed text-on-secondary-fixed px-1">USD 42,500.00</span>이며, <span class="bg-secondary-fixed text-on-secondary-fixed px-1">납기는 영업일 기준 14일</span> 이내입니다..."
+                            </p>
+</div>
+<div class="flex justify-between items-center">
+<div class="flex gap-sm">
+<span class="bg-surface-container px-sm py-xs rounded text-[11px] font-medium text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">picture_as_pdf</span> FM25006318_Final.pdf
+                                </span>
+</div>
+<button class="flex items-center gap-1 text-secondary font-label-md text-label-md hover:underline">
+                                View Source Thread <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Result Item 2: Medium Match -->
+<div class="bg-white border-l-4 border-outline rounded-lg p-lg border border-outline-variant hover:border-secondary transition-all-custom group cursor-pointer">
+<div class="flex justify-between items-start mb-sm">
+<div class="flex flex-col gap-xs">
+<div class="flex items-center gap-sm">
+<h3 class="font-title-lg text-title-lg text-on-surface group-hover:text-secondary transition-colors">RE: Shipping Confirmation - PO# FM25006318</h3>
+</div>
+<span class="text-body-sm font-body-sm text-outline flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]">mail</span> 
+                                    Received from logistics.team@partner.kr · Yesterday
+                                </span>
+</div>
+<div class="text-right">
+<div class="text-headline-sm font-headline-sm text-on-surface-variant">74%</div>
+<div class="text-[10px] font-label-md text-outline uppercase">Match Score</div>
+</div>
+</div>
+<div class="mb-md">
+<p class="text-body-md font-body-md text-on-surface-variant line-clamp-2">
+                                We have received your order confirmation based on quote FM25006318. The logistics team has scheduled pickup for next Tuesday...
+                            </p>
+</div>
+<div class="flex justify-between items-center">
+<div class="flex gap-sm">
+<span class="bg-surface-container px-sm py-xs rounded text-[11px] font-medium text-on-surface-variant">Logistics</span>
+</div>
+<button class="flex items-center gap-1 text-secondary font-label-md text-label-md hover:underline">
+                                View Source Thread <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- AI Insight Card -->
+<div class="bg-indigo-50 border-t-4 border-indigo-500 rounded-lg p-lg border border-indigo-100">
+<div class="flex items-center gap-sm mb-md">
+<span class="material-symbols-outlined text-indigo-600">auto_awesome</span>
+<h4 class="font-title-lg text-title-lg text-indigo-900">AI Knowledge Summary</h4>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-lg">
+<div class="space-y-sm">
+<h5 class="text-label-md font-label-md text-indigo-700 uppercase">Extracted Details</h5>
+<div class="space-y-1">
+<div class="flex justify-between border-b border-indigo-100 py-1">
+<span class="text-body-sm font-body-sm text-indigo-800">Total Amount</span>
+<span class="text-body-sm font-bold text-indigo-900">$42,500.00</span>
+</div>
+<div class="flex justify-between border-b border-indigo-100 py-1">
+<span class="text-body-sm font-body-sm text-indigo-800">Delivery Lead Time</span>
+<span class="text-body-sm font-bold text-indigo-900">14 Working Days</span>
+</div>
+<div class="flex justify-between border-b border-indigo-100 py-1">
+<span class="text-body-sm font-body-sm text-indigo-800">Reference Doc</span>
+<span class="text-body-sm font-bold text-indigo-900 underline">FM25006318</span>
+</div>
+</div>
+</div>
+<div class="bg-white/50 p-md rounded-lg border border-indigo-100">
+<h5 class="text-label-md font-label-md text-indigo-700 uppercase mb-xs">Related Insights</h5>
+<p class="text-body-sm font-body-sm text-indigo-900">
+                                    This quote is 12% higher than previous order PO-7721 from the same supplier. Budget approval may be required based on current department thresholds.
+                                </p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Filters Sidebar -->
+<aside class="w-[280px] bg-surface-container-low border-l border-outline-variant p-lg flex flex-col gap-xl h-full overflow-y-auto custom-scrollbar">
+<div>
+<h3 class="text-label-md font-label-md text-on-surface-variant uppercase tracking-widest mb-md">Refine Results</h3>
+<div class="space-y-sm">
+<label class="block">
+<span class="text-body-sm font-body-sm text-on-surface block mb-1">Date Range</span>
+<select class="w-full bg-white border border-outline-variant rounded p-sm text-body-sm focus:border-secondary outline-none">
+<option>Last 7 Days</option>
+<option selected="">Last 30 Days</option>
+<option>Last 6 Months</option>
+<option>Custom Range</option>
+</select>
+</label>
+</div>
+</div>
+<div>
+<h3 class="text-label-md font-label-md text-on-surface-variant uppercase tracking-widest mb-md">Category</h3>
+<div class="space-y-xs">
+<label class="flex items-center gap-sm cursor-pointer p-xs hover:bg-white rounded transition-colors">
+<input checked="" class="rounded text-secondary focus:ring-secondary" type="checkbox"/>
+<span class="text-body-sm font-body-sm">Finance &amp; Invoices</span>
+</label>
+<label class="flex items-center gap-sm cursor-pointer p-xs hover:bg-white rounded transition-colors">
+<input checked="" class="rounded text-secondary focus:ring-secondary" type="checkbox"/>
+<span class="text-body-sm font-body-sm">Logistics &amp; Shipping</span>
+</label>
+<label class="flex items-center gap-sm cursor-pointer p-xs hover:bg-white rounded transition-colors">
+<input class="rounded text-secondary focus:ring-secondary" type="checkbox"/>
+<span class="text-body-sm font-body-sm">Engineering Specs</span>
+</label>
+<label class="flex items-center gap-sm cursor-pointer p-xs hover:bg-white rounded transition-colors">
+<input class="rounded text-secondary focus:ring-secondary" type="checkbox"/>
+<span class="text-body-sm font-body-sm">Human Resources</span>
+</label>
+</div>
+</div>
+<div>
+<h3 class="text-label-md font-label-md text-on-surface-variant uppercase tracking-widest mb-md">Attachment Type</h3>
+<div class="flex flex-wrap gap-xs">
+<button class="bg-secondary text-white px-md py-xs rounded-full text-[11px] font-bold">PDF (12)</button>
+<button class="bg-white border border-outline-variant px-md py-xs rounded-full text-[11px] font-bold text-on-surface-variant hover:border-secondary">IMG (4)</button>
+<button class="bg-white border border-outline-variant px-md py-xs rounded-full text-[11px] font-bold text-on-surface-variant hover:border-secondary">XLSX (2)</button>
+<button class="bg-white border border-outline-variant px-md py-xs rounded-full text-[11px] font-bold text-on-surface-variant hover:border-secondary">DOCX (1)</button>
+</div>
+</div>
+<div class="mt-auto pt-lg">
+<div class="bg-primary/5 rounded-lg p-md border border-primary/10">
+<h4 class="text-label-sm font-bold text-primary flex items-center gap-1 mb-1">
+<span class="material-symbols-outlined text-[16px]">database</span>
+                            QDRANT STATUS
+                        </h4>
+<div class="flex items-center gap-2">
+<div class="h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
+<span class="text-[10px] text-on-surface-variant font-mono-data">INDEX SYNCED: 100%</span>
+</div>
+</div>
+</div>
+</aside>
+</div>
+</main>
+<!-- Floating Micro-interaction Script -->
+<script>
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('focus', () => {
+                input.parentElement.classList.add('scale-[1.01]');
+            });
+            input.addEventListener('blur', () => {
+                input.parentElement.classList.remove('scale-[1.01]');
+            });
+        });
+        
+        // Simulating search interaction
+        const searchInput = document.querySelector('input[type="text"]');
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const button = searchInput.nextElementSibling.querySelector('button');
+                button.innerHTML = '<span class="material-symbols-outlined animate-spin text-[16px]">sync</span> Processing';
+                setTimeout(() => {
+                    button.innerHTML = 'Search';
+                }, 1500);
+            }
+        });
+    </script>
+</body></html>
